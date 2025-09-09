@@ -10,6 +10,9 @@ let documentsData = [];
 // Subjects data - will be loaded dynamically
 let subjectsData = [];
 
+// Notifications data
+let userNotifications = [];
+
 // Initialize subjects data
 function initializeSubjects() {
     // Default subjects structure - can be managed by admin in the future
@@ -61,6 +64,9 @@ document.addEventListener('DOMContentLoaded', function() {
     loadUserData();
     setupDocumentBrowsing();
     handleURLParameters();
+    
+    // Initialize notifications
+    updateNotificationBadge();
 });
 
 // Check user authentication
@@ -80,18 +86,26 @@ function checkUserAuth() {
     }
 }
 
-// Sync documents from main site
+// Sync documents from storage
 function syncDocumentsFromMainSite() {
-    // Try to get documents from localStorage (saved by admin panel)
+    // Get documents from localStorage (managed by admin panel)
     const savedDocuments = localStorage.getItem('documents');
     if (savedDocuments) {
-        documentsData = JSON.parse(savedDocuments);
+        try {
+            documentsData = JSON.parse(savedDocuments);
+            console.log(`Loaded ${documentsData.length} documents from storage`);
+        } catch (error) {
+            console.error('Error parsing documents data:', error);
+            documentsData = [];
+        }
+    } else {
+        // Initialize with empty array - admin will add documents
+        documentsData = [];
+        console.log('No documents found in storage');
     }
     
-    // Also try to get from admin documents if available
-    if (typeof adminDocuments !== 'undefined' && adminDocuments.length > 0) {
-        documentsData = [...adminDocuments];
-    }
+    // Save last sync time
+    localStorage.setItem('lastDocumentSync', new Date().toISOString());
 }
 
 // Initialize dashboard
@@ -318,23 +332,10 @@ function loadRecommendedDocuments() {
     `).join('');
 }
 
-// Load user documents
+// Load user documents - this shows all available documents for browsing
 function loadUserDocuments() {
-    const container = document.getElementById('userDocumentsGrid');
-    if (!container) return;
-    
-    // In real app, load user's uploaded documents
-    container.innerHTML = `
-        <div class="empty-state">
-            <i class="fas fa-upload"></i>
-            <h3>Hali hujjat yuklamadingiz</h3>
-            <p>Birinchi hujjatingizni yuklash uchun admin bilan bog'laning</p>
-            <button class="btn btn-primary" onclick="contactAdmin()">
-                <i class="fas fa-envelope"></i>
-                Admin bilan bog'lanish
-            </button>
-        </div>
-    `;
+    // Show all documents section
+    applyDocumentFilters();
 }
 
 // Load downloads
@@ -684,6 +685,129 @@ function contactAdmin() {
 function toggleNotifications() {
     const panel = document.getElementById('notificationsPanel');
     panel.classList.toggle('active');
+    
+    if (panel.classList.contains('active')) {
+        loadNotifications();
+        markNotificationsAsRead();
+    }
+}
+
+// Load notifications
+function loadNotifications() {
+    const container = document.getElementById('notificationsList');
+    if (!container) return;
+    
+    // Load from localStorage
+    const savedNotifications = localStorage.getItem('userNotifications');
+    if (savedNotifications) {
+        userNotifications = JSON.parse(savedNotifications);
+    }
+    
+    if (userNotifications.length === 0) {
+        container.innerHTML = `
+            <div style="text-align: center; padding: 2rem; color: #6b7280;">
+                <i class="fas fa-bell" style="font-size: 2rem; margin-bottom: 1rem; display: block;"></i>
+                <p>Bildirishnomalar yo'q</p>
+            </div>
+        `;
+        return;
+    }
+    
+    container.innerHTML = userNotifications.map(notification => `
+        <div class="notification-item ${notification.read ? 'read' : 'unread'}">
+            <div class="notification-icon">
+                <i class="${getNotificationTypeIcon(notification.type)}"></i>
+            </div>
+            <div class="notification-content">
+                <p>${notification.message}</p>
+                <span>${notification.details || ''}</span>
+            </div>
+            <div class="notification-time">${formatTimeAgo(notification.createdAt)}</div>
+        </div>
+    `).join('');
+}
+
+// Add notification
+function addNotification(type, message, details = '') {
+    const notification = {
+        id: Date.now(),
+        type: type,
+        message: message,
+        details: details,
+        read: false,
+        createdAt: new Date().toISOString()
+    };
+    
+    userNotifications.unshift(notification);
+    
+    // Keep only last 50 notifications
+    if (userNotifications.length > 50) {
+        userNotifications = userNotifications.slice(0, 50);
+    }
+    
+    // Save to localStorage
+    localStorage.setItem('userNotifications', JSON.stringify(userNotifications));
+    
+    // Update notification badge
+    updateNotificationBadge();
+}
+
+// Mark notifications as read
+function markNotificationsAsRead() {
+    userNotifications.forEach(notification => {
+        notification.read = true;
+    });
+    
+    localStorage.setItem('userNotifications', JSON.stringify(userNotifications));
+    updateNotificationBadge();
+}
+
+// Update notification badge
+function updateNotificationBadge() {
+    const badge = document.querySelector('.notification-badge');
+    if (!badge) return;
+    
+    const unreadCount = userNotifications.filter(n => !n.read).length;
+    
+    if (unreadCount > 0) {
+        badge.textContent = unreadCount > 99 ? '99+' : unreadCount;
+        badge.style.display = 'flex';
+    } else {
+        badge.style.display = 'none';
+    }
+}
+
+// Get notification type icon
+function getNotificationTypeIcon(type) {
+    const icons = {
+        download: 'fas fa-download',
+        favorite: 'fas fa-heart',
+        document: 'fas fa-file-alt',
+        system: 'fas fa-info-circle',
+        warning: 'fas fa-exclamation-triangle',
+        success: 'fas fa-check-circle'
+    };
+    return icons[type] || 'fas fa-bell';
+}
+
+// Format time ago
+function formatTimeAgo(dateString) {
+    const date = new Date(dateString);
+    const now = new Date();
+    const diffInSeconds = Math.floor((now - date) / 1000);
+    
+    if (diffInSeconds < 60) {
+        return 'Hozirgina';
+    } else if (diffInSeconds < 3600) {
+        const minutes = Math.floor(diffInSeconds / 60);
+        return `${minutes} daqiqa oldin`;
+    } else if (diffInSeconds < 86400) {
+        const hours = Math.floor(diffInSeconds / 3600);
+        return `${hours} soat oldin`;
+    } else {
+        const days = Math.floor(diffInSeconds / 86400);
+        return `${days} kun oldin`;
+    }
 }
 
 // Logout
@@ -930,37 +1054,70 @@ function downloadDocument(docId) {
         return;
     }
     
+    // Check if document file exists
+    if (!doc.filePath) {
+        showNotification('Fayl yo\'lini aniqlab bo\'lmadi', 'error');
+        return;
+    }
+    
     // Show download notification
     showNotification(`${doc.title} yuklab olinmoqda...`, 'info');
     
-    // Simulate download process
-    setTimeout(() => {
+    // Create download link
+    const downloadLink = document.createElement('a');
+    downloadLink.href = doc.filePath;
+    downloadLink.download = `${doc.title}.${doc.format}`;
+    downloadLink.style.display = 'none';
+    
+    document.body.appendChild(downloadLink);
+    
+    try {
+        // Trigger download
+        downloadLink.click();
+        
         // Update download count
         doc.downloadCount = (doc.downloadCount || 0) + 1;
         
         // Add to user downloads
         const downloadRecord = {
             id: Date.now(),
+            docId: docId,
             title: doc.title,
             subject: doc.subject,
             format: doc.format,
-            downloadDate: new Date().toISOString().split('T')[0],
+            downloadDate: new Date().toISOString(),
             author: doc.author,
-            size: doc.size
+            size: doc.size,
+            filePath: doc.filePath
         };
         userDownloads.unshift(downloadRecord);
         
-        // Save to localStorage
+        // Update documents data in localStorage
+        localStorage.setItem('documents', JSON.stringify(documentsData));
+        
+        // Save user downloads
         localStorage.setItem('userDownloads', JSON.stringify(userDownloads));
         
         // Update UI
-        renderDocuments(documentsData);
+        if (typeof renderDocuments === 'function') {
+            renderDocuments(documentsData);
+        }
         loadRecentDownloads();
         updateStatistics();
         
+        // Add notification
+        addNotification('download', 'Hujjat muvaffaqiyatli yuklab olindi', `${doc.title} - ${getSubjectName(doc.subject)}`);
+        
         // Show success notification
         showNotification(`${doc.title} muvaffaqiyatli yuklab olindi!`, 'success');
-    }, 1500);
+        
+    } catch (error) {
+        console.error('Download error:', error);
+        showNotification('Yuklab olishda xatolik yuz berdi', 'error');
+    } finally {
+        // Clean up
+        document.body.removeChild(downloadLink);
+    }
 }
 
 // Toggle favorite
@@ -972,6 +1129,7 @@ function toggleFavorite(docId) {
     
     if (existingIndex > -1) {
         userFavorites.splice(existingIndex, 1);
+        addNotification('favorite', 'Sevimlilardan olib tashlandi', `${doc.title} - ${getSubjectName(doc.subject)}`);
         showNotification('Sevimlilardan olib tashlandi', 'info');
     } else {
         userFavorites.push({
@@ -982,6 +1140,7 @@ function toggleFavorite(docId) {
             author: doc.author,
             addedDate: new Date().toISOString().split('T')[0]
         });
+        addNotification('favorite', 'Sevimlilarga qo\'shildi', `${doc.title} - ${getSubjectName(doc.subject)}`);
         showNotification('Sevimlilarga qo\'shildi', 'success');
     }
     
