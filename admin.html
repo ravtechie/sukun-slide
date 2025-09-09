@@ -20,7 +20,9 @@
             </div>
             <div class="nav-user">
                 <div class="user-info">
-                    <img src="https://via.placeholder.com/40" alt="Admin" class="user-avatar">
+                    <div class="user-avatar">
+                        <i class="fas fa-user-shield"></i>
+                    </div>
                     <div class="user-details">
                         <span class="user-name">Ravshan Tech</span>
                         <span class="user-role">Administrator</span>
@@ -89,9 +91,9 @@
                             <i class="fas fa-file-alt"></i>
                         </div>
                         <div class="stat-content">
-                            <h3>342</h3>
+                            <h3 id="totalDocuments">0</h3>
                             <p>Jami hujjatlar</p>
-                            <span class="stat-change positive">+12%</span>
+                            <span class="stat-change" id="documentsChange">0%</span>
                         </div>
                     </div>
                     <div class="stat-card">
@@ -99,9 +101,9 @@
                             <i class="fas fa-users"></i>
                         </div>
                         <div class="stat-content">
-                            <h3>1,234</h3>
+                            <h3 id="totalUsers">0</h3>
                             <p>Foydalanuvchilar</p>
-                            <span class="stat-change positive">+8%</span>
+                            <span class="stat-change" id="usersChange">0%</span>
                         </div>
                     </div>
                     <div class="stat-card">
@@ -109,9 +111,9 @@
                             <i class="fas fa-download"></i>
                         </div>
                         <div class="stat-content">
-                            <h3>5,678</h3>
+                            <h3 id="totalDownloads">0</h3>
                             <p>Yuklab olingan</p>
-                            <span class="stat-change positive">+15%</span>
+                            <span class="stat-change" id="downloadsChange">0%</span>
                         </div>
                     </div>
                     <div class="stat-card">
@@ -119,9 +121,9 @@
                             <i class="fas fa-book"></i>
                         </div>
                         <div class="stat-content">
-                            <h3>8</h3>
+                            <h3 id="totalSubjects">0</h3>
                             <p>Fanlar</p>
-                            <span class="stat-change neutral">0%</span>
+                            <span class="stat-change" id="subjectsChange">0%</span>
                         </div>
                     </div>
                 </div>
@@ -271,50 +273,74 @@
                         <input type="file" id="fileInput" accept=".ppt,.pptx,.pdf,.doc,.docx,.xlsx" style="display: none;">
                     </div>
 
-                    <form class="upload-form" id="uploadForm">
-                        <div class="form-grid">
-                            <div class="form-group">
-                                <label for="documentTitle">Hujjat nomi *</label>
-                                <input type="text" id="documentTitle" name="title" required>
+                        <form class="upload-form" id="uploadForm">
+                            <div class="form-grid">
+                                <div class="form-group">
+                                    <label for="documentTitle">
+                                        <i class="fas fa-heading"></i>
+                                        Hujjat nomi *
+                                    </label>
+                                    <input type="text" id="documentTitle" name="title" required 
+                                           placeholder="Masalan: Algebra asoslari - Ma'ruza 1">
+                                </div>
+                                <div class="form-group">
+                                    <label for="documentSubject">
+                                        <i class="fas fa-book"></i>
+                                        Fan *
+                                    </label>
+                                    <select id="documentSubject" name="subject" required>
+                                        <option value="">Fan tanlang</option>
+                                        <option value="mathematics">📊 Matematika</option>
+                                        <option value="physics">⚛️ Fizika</option>
+                                        <option value="chemistry">🧪 Kimyo</option>
+                                        <option value="biology">🧬 Biologiya</option>
+                                        <option value="history">🏛️ Tarix</option>
+                                        <option value="geography">🌍 Geografiya</option>
+                                        <option value="literature">📚 Adabiyot</option>
+                                        <option value="english">🇺🇸 Ingliz tili</option>
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label for="documentAuthor">
+                                        <i class="fas fa-user-edit"></i>
+                                        Muallif
+                                    </label>
+                                    <input type="text" id="documentAuthor" name="author" 
+                                           placeholder="Muallif ismi yoki tashkilot nomi">
+                                </div>
+                                <div class="form-group">
+                                    <label for="documentTags">
+                                        <i class="fas fa-tags"></i>
+                                        Teglar
+                                    </label>
+                                    <div class="tags-input">
+                                        <input type="text" id="documentTags" name="tags" 
+                                               placeholder="Teglarni vergul bilan ajrating">
+                                        <div class="tags-list" id="tagsList">
+                                            <!-- Tags will be added here dynamically -->
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
                             <div class="form-group">
-                                <label for="documentSubject">Fan *</label>
-                                <select id="documentSubject" name="subject" required>
-                                    <option value="">Fan tanlang</option>
-                                    <option value="mathematics">Matematika</option>
-                                    <option value="physics">Fizika</option>
-                                    <option value="chemistry">Kimyo</option>
-                                    <option value="biology">Biologiya</option>
-                                    <option value="history">Tarix</option>
-                                    <option value="geography">Geografiya</option>
-                                    <option value="literature">Adabiyot</option>
-                                    <option value="english">Ingliz tili</option>
-                                </select>
+                                <label for="documentDescription">
+                                    <i class="fas fa-align-left"></i>
+                                    Tavsif
+                                </label>
+                                <textarea id="documentDescription" name="description" rows="4" 
+                                        placeholder="Hujjat haqida batafsil ma'lumot. Masalan: Ushbu ma'ruza algebra fanining asosiy tushunchalarini o'z ichiga oladi..."></textarea>
                             </div>
-                            <div class="form-group">
-                                <label for="documentAuthor">Muallif</label>
-                                <input type="text" id="documentAuthor" name="author">
+                            <div class="form-actions">
+                                <button type="button" class="btn btn-secondary" onclick="clearUploadForm()">
+                                    <i class="fas fa-times"></i>
+                                    Bekor qilish
+                                </button>
+                                <button type="submit" class="btn btn-primary">
+                                    <i class="fas fa-upload"></i>
+                                    Yuklash
+                                </button>
                             </div>
-                            <div class="form-group">
-                                <label for="documentTags">Teglar</label>
-                                <input type="text" id="documentTags" name="tags" placeholder="algebra, geometriya, misollar">
-                            </div>
-                        </div>
-                        <div class="form-group">
-                            <label for="documentDescription">Tavsif</label>
-                            <textarea id="documentDescription" name="description" rows="4" placeholder="Hujjat haqida batafsil ma'lumot..."></textarea>
-                        </div>
-                        <div class="form-actions">
-                            <button type="button" class="btn btn-secondary" onclick="clearUploadForm()">
-                                <i class="fas fa-times"></i>
-                                Bekor qilish
-                            </button>
-                            <button type="submit" class="btn btn-primary">
-                                <i class="fas fa-upload"></i>
-                                Yuklash
-                            </button>
-                        </div>
-                    </form>
+                        </form>
                 </div>
             </section>
 

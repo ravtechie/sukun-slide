@@ -17,6 +17,7 @@ let systemMonitoringInterval = null;
 // Initialize admin panel
 document.addEventListener('DOMContentLoaded', function() {
     checkAdminAuth();
+    initializeDefaultData();
     initializeAdminPanel();
     setupEventListeners();
     loadDashboardData();
@@ -24,6 +25,28 @@ document.addEventListener('DOMContentLoaded', function() {
     startSystemMonitoring();
     setupSettingsTabs();
 });
+
+// Initialize default data if needed
+function initializeDefaultData() {
+    // Initialize subjects if none exist
+    const subjects = JSON.parse(localStorage.getItem('subjects') || '[]');
+    if (subjects.length === 0) {
+        const defaultSubjects = [
+            { id: 'mathematics', name: 'Matematika', description: 'Matematik fanlar', color: '#3b82f6' },
+            { id: 'physics', name: 'Fizika', description: 'Fizika fani', color: '#8b5cf6' },
+            { id: 'chemistry', name: 'Kimyo', description: 'Kimyo fani', color: '#10b981' },
+            { id: 'biology', name: 'Biologiya', description: 'Biologiya fani', color: '#f59e0b' },
+            { id: 'history', name: 'Tarix', description: 'Tarix fani', color: '#ef4444' },
+            { id: 'geography', name: 'Geografiya', description: 'Geografiya fani', color: '#06b6d4' },
+            { id: 'literature', name: 'Adabiyot', description: 'Adabiyot fani', color: '#ec4899' },
+            { id: 'english', name: 'Ingliz tili', description: 'Ingliz tili', color: '#84cc16' }
+        ];
+        localStorage.setItem('subjects', JSON.stringify(defaultSubjects));
+    }
+    
+    // Initialize system settings
+    loadSystemSettings();
+}
 
 // Check admin authentication
 function checkAdminAuth() {
@@ -45,6 +68,9 @@ function initializeAdminPanel() {
             const section = this.getAttribute('data-section');
             showSection(section);
             
+            // Log navigation activity
+            logActivity('navigation', `Navigated to ${section} section`, 'info');
+            
             // Update active state
             menuItems.forEach(mi => mi.classList.remove('active'));
             this.classList.add('active');
@@ -55,6 +81,40 @@ function initializeAdminPanel() {
     loadDocuments();
     loadUsers();
     loadSubjects();
+    
+    // Log admin login
+    logActivity('auth', 'Admin logged in', 'success');
+}
+
+// Activity logging function
+function logActivity(type, message, level = 'info', details = null) {
+    const activities = JSON.parse(localStorage.getItem('adminActivities') || '[]');
+    
+    const activity = {
+        id: Date.now(),
+        type: type, // 'auth', 'document', 'user', 'navigation', 'system'
+        message: message,
+        level: level, // 'info', 'success', 'warning', 'error'
+        details: details,
+        timestamp: new Date().toISOString(),
+        user: 'Administrator'
+    };
+    
+    // Add to beginning of array (most recent first)
+    activities.unshift(activity);
+    
+    // Keep only last 100 activities
+    if (activities.length > 100) {
+        activities.splice(100);
+    }
+    
+    // Save to localStorage
+    localStorage.setItem('adminActivities', JSON.stringify(activities));
+    
+    // If we're on the dashboard, refresh the activity list
+    if (document.querySelector('#dashboard.active')) {
+        loadRecentActivity();
+    }
 }
 
 // Setup event listeners
@@ -79,6 +139,24 @@ function setupEventListeners() {
         uploadForm.addEventListener('submit', handleUpload);
     }
     
+    // Tags input
+    const tagsInput = document.getElementById('documentTags');
+    if (tagsInput) {
+        tagsInput.addEventListener('keydown', handleTagInput);
+        tagsInput.addEventListener('blur', handleTagInput);
+        
+        // Initialize tags from localStorage if available
+        const savedTags = localStorage.getItem('recentTags');
+        if (savedTags) {
+            try {
+                const tags = JSON.parse(savedTags);
+                tags.forEach(tag => addTag(tag));
+            } catch (error) {
+                console.error('Error loading saved tags:', error);
+            }
+        }
+    }
+    
     // Search functionality
     const searchInputs = document.querySelectorAll('.search-box input');
     searchInputs.forEach(input => {
@@ -96,6 +174,77 @@ function setupEventListeners() {
     if (selectAllCheckbox) {
         selectAllCheckbox.addEventListener('change', handleSelectAll);
     }
+}
+
+// Handle tag input
+function handleTagInput(e) {
+    // Add tag on comma, Enter, or blur
+    if (e.type === 'blur' || e.key === ',' || e.key === 'Enter') {
+        e.preventDefault();
+        
+        const input = e.target;
+        const value = input.value.trim().replace(/,/g, '');
+        
+        if (value) {
+            addTag(value);
+            input.value = '';
+            
+            // Save to localStorage
+            saveRecentTags();
+        }
+    }
+}
+
+// Add tag to the list
+function addTag(text) {
+    const tagsList = document.getElementById('tagsList');
+    if (!tagsList) return;
+    
+    // Check if tag already exists
+    const existingTags = tagsList.querySelectorAll('.tag-item');
+    for (const tag of existingTags) {
+        if (tag.querySelector('span').textContent === text) {
+            return;
+        }
+    }
+    
+    const tag = document.createElement('div');
+    tag.className = 'tag-item';
+    tag.innerHTML = `
+        <span>${text}</span>
+        <button type="button" onclick="removeTag(this)">
+            <i class="fas fa-times"></i>
+        </button>
+    `;
+    
+    tagsList.appendChild(tag);
+}
+
+// Remove tag from the list
+function removeTag(button) {
+    const tag = button.parentElement;
+    tag.remove();
+    saveRecentTags();
+}
+
+// Save tags to localStorage
+function saveRecentTags() {
+    const tagsList = document.getElementById('tagsList');
+    if (!tagsList) return;
+    
+    const tags = Array.from(tagsList.querySelectorAll('.tag-item span'))
+        .map(span => span.textContent);
+    
+    localStorage.setItem('recentTags', JSON.stringify(tags));
+}
+
+// Get current tags
+function getCurrentTags() {
+    const tagsList = document.getElementById('tagsList');
+    if (!tagsList) return [];
+    
+    return Array.from(tagsList.querySelectorAll('.tag-item span'))
+        .map(span => span.textContent);
 }
 
 // Show section
@@ -158,20 +307,69 @@ function syncUsersFromAuth() {
 
 // Update statistics
 function updateStats() {
-    const stats = {
-        totalDocuments: adminDocuments.length,
-        totalUsers: adminUsers.length,
-        totalDownloads: adminDocuments.reduce((sum, doc) => sum + (doc.downloads || 0), 0),
-        totalSubjects: 8
-    };
+    // Get data from localStorage
+    const documents = JSON.parse(localStorage.getItem('documents') || '[]');
+    const users = JSON.parse(localStorage.getItem('users') || '[]');
+    const subjects = JSON.parse(localStorage.getItem('subjects') || '[]');
     
-    // Update stat cards
-    const statCards = document.querySelectorAll('.stat-card');
-    if (statCards.length >= 4) {
-        statCards[0].querySelector('h3').textContent = stats.totalDocuments;
-        statCards[1].querySelector('h3').textContent = stats.totalUsers.toLocaleString();
-        statCards[2].querySelector('h3').textContent = stats.totalDownloads.toLocaleString();
-        statCards[3].querySelector('h3').textContent = stats.totalSubjects;
+    // Calculate current stats
+    const totalDocuments = documents.length;
+    const totalUsers = users.length;
+    const totalDownloads = documents.reduce((sum, doc) => sum + (doc.downloadCount || 0), 0);
+    const totalSubjects = subjects.length;
+    
+    // Get previous stats for comparison
+    const previousStats = JSON.parse(localStorage.getItem('previousStats') || '{}');
+    
+    // Calculate percentage changes
+    const documentsChange = calculatePercentageChange(totalDocuments, previousStats.documents || 0);
+    const usersChange = calculatePercentageChange(totalUsers, previousStats.users || 0);
+    const downloadsChange = calculatePercentageChange(totalDownloads, previousStats.downloads || 0);
+    const subjectsChange = calculatePercentageChange(totalSubjects, previousStats.subjects || 0);
+    
+    // Update UI elements
+    document.getElementById('totalDocuments').textContent = totalDocuments.toLocaleString();
+    document.getElementById('totalUsers').textContent = totalUsers.toLocaleString();
+    document.getElementById('totalDownloads').textContent = totalDownloads.toLocaleString();
+    document.getElementById('totalSubjects').textContent = totalSubjects.toLocaleString();
+    
+    // Update change indicators
+    updateChangeIndicator('documentsChange', documentsChange);
+    updateChangeIndicator('usersChange', usersChange);
+    updateChangeIndicator('downloadsChange', downloadsChange);
+    updateChangeIndicator('subjectsChange', subjectsChange);
+    
+    // Store current stats as previous for next comparison
+    const currentStats = {
+        documents: totalDocuments,
+        users: totalUsers,
+        downloads: totalDownloads,
+        subjects: totalSubjects,
+        timestamp: Date.now()
+    };
+    localStorage.setItem('previousStats', JSON.stringify(currentStats));
+    
+    console.log('Stats updated:', currentStats);
+}
+
+function calculatePercentageChange(current, previous) {
+    if (previous === 0) return current > 0 ? 100 : 0;
+    return Math.round(((current - previous) / previous) * 100);
+}
+
+function updateChangeIndicator(elementId, change) {
+    const element = document.getElementById(elementId);
+    if (!element) return;
+    
+    element.textContent = `${change > 0 ? '+' : ''}${change}%`;
+    element.className = 'stat-change';
+    
+    if (change > 0) {
+        element.classList.add('positive');
+    } else if (change < 0) {
+        element.classList.add('negative');
+    } else {
+        element.classList.add('neutral');
     }
 }
 
@@ -207,18 +405,49 @@ function loadRecentActivity() {
     // Show recent activities (last 5)
     const recentActivities = activities.slice(0, 5);
     
-    activityList.innerHTML = recentActivities.map(activity => `
-        <div class="activity-item">
-            <div class="activity-icon">
-                <i class="${activity.icon}"></i>
+    activityList.innerHTML = recentActivities.map(activity => {
+        const timeAgo = getTimeAgo(activity.timestamp);
+        const icon = getActivityIcon(activity.type, activity.level);
+        
+        return `
+            <div class="activity-item">
+                <div class="activity-icon ${activity.level}">
+                    <i class="${icon}"></i>
+                </div>
+                <div class="activity-content">
+                    <p><strong>${activity.message}</strong></p>
+                    <span>${activity.user} • ${timeAgo}</span>
+                </div>
+                <div class="activity-time">${new Date(activity.timestamp).toLocaleTimeString('uz-UZ', { 
+                    hour: '2-digit', 
+                    minute: '2-digit' 
+                })}</div>
             </div>
-            <div class="activity-content">
-                <p><strong>${activity.title}</strong></p>
-                <span>${activity.subtitle}</span>
-            </div>
-            <div class="activity-time">${activity.time}</div>
-        </div>
-    `).join('');
+        `;
+    }).join('');
+
+function getActivityIcon(type, level) {
+    const icons = {
+        auth: 'fas fa-sign-in-alt',
+        document: level === 'warning' ? 'fas fa-trash' : (level === 'success' ? 'fas fa-edit' : 'fas fa-file'),
+        user: level === 'warning' ? 'fas fa-user-times' : 'fas fa-user',
+        navigation: 'fas fa-mouse-pointer',
+        system: 'fas fa-cog',
+        upload: 'fas fa-upload'
+    };
+    return icons[type] || 'fas fa-info-circle';
+}
+
+function getTimeAgo(timestamp) {
+    const now = new Date();
+    const time = new Date(timestamp);
+    const diffInSeconds = Math.floor((now - time) / 1000);
+    
+    if (diffInSeconds < 60) return `${diffInSeconds} soniya oldin`;
+    if (diffInSeconds < 3600) return `${Math.floor(diffInSeconds / 60)} daqiqa oldin`;
+    if (diffInSeconds < 86400) return `${Math.floor(diffInSeconds / 3600)} soat oldin`;
+    return `${Math.floor(diffInSeconds / 86400)} kun oldin`;
+}
 }
 
 // Load top documents
@@ -438,36 +667,101 @@ function handleFileSelect(e) {
 
 function handleFiles(files) {
     const uploadArea = document.getElementById('uploadArea');
+    const maxFileSize = 50 * 1024 * 1024; // 50MB
+    const allowedTypes = {
+        'application/pdf': 'pdf',
+        'application/vnd.ms-powerpoint': 'ppt',
+        'application/vnd.openxmlformats-officedocument.presentationml.presentation': 'pptx',
+        'application/msword': 'doc',
+        'application/vnd.openxmlformats-officedocument.wordprocessingml.document': 'docx',
+        'application/vnd.ms-excel': 'xls',
+        'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet': 'xlsx'
+    };
     
-    if (files.length > 0) {
-        uploadArea.innerHTML = `
-            <div class="upload-content">
-                <i class="fas fa-check-circle" style="color: #10b981;"></i>
-                <h3>${files.length} ta fayl tanlandi</h3>
-                <p>Fayl ma'lumotlarini to'ldiring va yuklang</p>
+    if (files.length === 0) {
+        showNotification('Iltimos, fayl tanlang', 'warning');
+        return;
+    }
+    
+    const file = files[0]; // Single file upload
+    
+    // Validate file size
+    if (file.size > maxFileSize) {
+        showNotification(`Fayl hajmi 50MB dan oshmasligi kerak. Joriy hajm: ${formatFileSize(file.size)}`, 'error');
+        return;
+    }
+    
+    // Validate file type
+    const fileType = file.type;
+    if (!allowedTypes[fileType]) {
+        showNotification('Faqat PDF, PowerPoint, Word va Excel fayllari qo\'llab-quvvatlanadi', 'error');
+        return;
+    }
+    
+    // Update upload area UI
+    uploadArea.innerHTML = `
+        <div class="upload-content">
+            <i class="fas fa-check-circle" style="color: #10b981;"></i>
+            <div class="file-info">
+                <h3>${file.name}</h3>
+                <p>${formatFileSize(file.size)} • ${allowedTypes[fileType].toUpperCase()}</p>
             </div>
-        `;
+            <div class="upload-progress" style="display: none;">
+                <div class="progress-bar">
+                    <div class="progress-fill"></div>
+                </div>
+                <p class="progress-text">0%</p>
+            </div>
+        </div>
+    `;
+    
+    // Populate form with file info
+    const titleInput = document.getElementById('documentTitle');
+    if (titleInput && !titleInput.value) {
+        titleInput.value = file.name.replace(/\.[^/.]+$/, "");
+    }
+    
+    // Auto-select subject based on file name or content (if possible)
+    const subjectSelect = document.getElementById('documentSubject');
+    if (subjectSelect) {
+        const subjectMatches = {
+            'math': 'mathematics',
+            'algebra': 'mathematics',
+            'geometr': 'mathematics',
+            'fizik': 'physics',
+            'phys': 'physics',
+            'kimyo': 'chemistry',
+            'chem': 'chemistry',
+            'bio': 'biology',
+            'tarix': 'history',
+            'hist': 'history',
+            'geog': 'geography',
+            'adabiyot': 'literature',
+            'english': 'english'
+        };
         
-        // Populate form with file info
-        const firstFile = files[0];
-        const titleInput = document.getElementById('documentTitle');
-        if (titleInput && !titleInput.value) {
-            titleInput.value = firstFile.name.replace(/\.[^/.]+$/, "");
+        const fileName = file.name.toLowerCase();
+        for (const [key, value] of Object.entries(subjectMatches)) {
+            if (fileName.includes(key)) {
+                subjectSelect.value = value;
+                break;
+            }
         }
     }
+    
+    // Store file for upload
+    window.fileToUpload = file;
 }
 
-function handleUpload(e) {
+async function handleUpload(e) {
     e.preventDefault();
-    
-    const formData = new FormData(e.target);
-    const fileInput = document.getElementById('fileInput');
     
     // Get form values
     const title = document.getElementById('documentTitle').value;
     const subject = document.getElementById('documentSubject').value;
     const author = document.getElementById('documentAuthor').value;
     const description = document.getElementById('documentDescription').value;
+    const tags = document.getElementById('documentTags').value;
     
     // Validate required fields
     if (!title) {
@@ -480,67 +774,151 @@ function handleUpload(e) {
         return;
     }
     
-    if (!fileInput.files.length) {
+    if (!window.fileToUpload) {
         showNotification('Iltimos, fayl tanlang', 'error');
         return;
     }
     
-    // Validate file type
-    const allowedTypes = ['ppt', 'pptx', 'pdf', 'doc', 'docx', 'xlsx'];
-    const fileExtension = fileInput.files[0].name.split('.').pop().toLowerCase();
+    // Get file and type info
+    const file = window.fileToUpload;
+    const fileType = file.type;
+    const allowedTypes = {
+        'application/pdf': 'pdf',
+        'application/vnd.ms-powerpoint': 'ppt',
+        'application/vnd.openxmlformats-officedocument.presentationml.presentation': 'pptx',
+        'application/msword': 'doc',
+        'application/vnd.openxmlformats-officedocument.wordprocessingml.document': 'docx',
+        'application/vnd.ms-excel': 'xls',
+        'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet': 'xlsx'
+    };
     
-    if (!allowedTypes.includes(fileExtension)) {
-        showNotification('Faqat PPT, PDF, DOC, XLSX formatlarida fayl yuklash mumkin', 'error');
+    if (!allowedTypes[fileType]) {
+        showNotification('Noto\'g\'ri fayl formati', 'error');
         return;
     }
     
-    // Show loading
+    // Show upload progress UI
+    const uploadArea = document.getElementById('uploadArea');
+    const progressContainer = uploadArea.querySelector('.upload-progress');
+    const progressBar = progressContainer.querySelector('.progress-fill');
+    const progressText = progressContainer.querySelector('.progress-text');
+    progressContainer.style.display = 'block';
+    
+    // Disable submit button
     const submitBtn = e.target.querySelector('button[type="submit"]');
     const originalText = submitBtn.innerHTML;
     submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Yuklanmoqda...';
     submitBtn.disabled = true;
     
-    // Simulate upload
-    setTimeout(() => {
-        // Add new document
-        const newDoc = {
-            id: adminDocuments.length + 1,
-            title: title,
-            subject: subject,
-            format: fileExtension,
-            size: formatFileSize(fileInput.files[0].size),
-            downloads: 0,
-            uploadDate: new Date().toISOString().split('T')[0],
-            author: author || 'Admin',
-            description: description || '',
-            status: 'active'
+    try {
+        // Create unique filename
+        const timestamp = new Date().getTime();
+        const fileExtension = allowedTypes[fileType];
+        const sanitizedTitle = title.toLowerCase().replace(/[^a-z0-9]+/g, '-');
+        const filename = `${sanitizedTitle}-${timestamp}.${fileExtension}`;
+        
+        // Create upload directory if it doesn't exist
+        const uploadDir = 'uploads/documents';
+        try {
+            await fs.mkdir(uploadDir, { recursive: true });
+        } catch (err) {
+            console.warn('Upload directory already exists or could not be created:', err);
+        }
+        
+        // Create FormData
+        const formData = new FormData();
+        formData.append('file', file, filename);
+        formData.append('title', title);
+        formData.append('subject', subject);
+        formData.append('author', author);
+        formData.append('description', description);
+        formData.append('tags', tags);
+        
+        // Upload file with progress tracking
+        const xhr = new XMLHttpRequest();
+        
+        xhr.upload.onprogress = (event) => {
+            if (event.lengthComputable) {
+                const percentComplete = (event.loaded / event.total) * 100;
+                progressBar.style.width = percentComplete + '%';
+                progressText.textContent = Math.round(percentComplete) + '%';
+            }
         };
         
-        adminDocuments.unshift(newDoc);
+        xhr.onload = () => {
+            if (xhr.status === 200) {
+                const response = JSON.parse(xhr.responseText);
+                
+                if (response.success) {
+                    // Add new document to admin documents
+                    const newDoc = {
+                        id: adminDocuments.length + 1,
+                        title: title,
+                        subject: subject,
+                        format: fileExtension,
+                        size: formatFileSize(file.size),
+                        downloads: 0,
+                        uploadDate: new Date().toISOString().split('T')[0],
+                        author: author || 'Admin',
+                        description: description || '',
+                        tags: tags ? tags.split(',').map(tag => tag.trim()) : [],
+                        status: 'active',
+                        filePath: `${uploadDir}/${filename}`,
+                        mimeType: fileType
+                    };
+                    
+                    adminDocuments.unshift(newDoc);
+                    
+                    // Log activity
+                    logActivity('fas fa-upload', 'Admin yangi hujjat yukladi', `${newDoc.title} - ${newDoc.format.toUpperCase()}`);
+                    
+                    // Add notification for document upload
+                    addNotification('document', 'Yangi hujjat yuklandi', `${newDoc.title} - ${getSubjectName(newDoc.subject)}`);
+                    
+                    showNotification('Hujjat muvaffaqiyatli yuklandi!', 'success');
+                    clearUploadForm();
+                    
+                    // Update UI
+                    loadDocuments();
+                    updateStats();
+                    
+                    // Update main website documents
+                    if (typeof documentsData !== 'undefined') {
+                        documentsData.unshift(newDoc);
+                    }
+                    
+                    // Save to localStorage
+                    localStorage.setItem('documents', JSON.stringify(adminDocuments));
+                    
+                } else {
+                    throw new Error(response.message || 'Yuklashda xatolik yuz berdi');
+                }
+            } else {
+                throw new Error('Server xatosi: ' + xhr.status);
+            }
+        };
         
-        // Log activity
-        logActivity('fas fa-upload', 'Admin yangi hujjat yukladi', `${newDoc.title} - ${newDoc.format.toUpperCase()}`);
+        xhr.onerror = () => {
+            throw new Error('Tarmoq xatosi yuz berdi');
+        };
         
-        showNotification('Hujjat muvaffaqiyatli yuklandi!', 'success');
-        clearUploadForm();
+        // Send the upload request
+        xhr.open('POST', '/api/upload', true);
+        xhr.send(formData);
         
+    } catch (error) {
+        console.error('Upload error:', error);
+        showNotification('Yuklashda xatolik: ' + error.message, 'error');
+        
+        // Reset progress UI
+        progressContainer.style.display = 'none';
+        progressBar.style.width = '0%';
+        progressText.textContent = '0%';
+    } finally {
         // Reset button
         submitBtn.innerHTML = originalText;
         submitBtn.disabled = false;
-        
-        // Refresh documents list
-        loadDocuments();
-        updateStats();
-        
-        // Also update main website documents if available
-        if (typeof documentsData !== 'undefined') {
-            documentsData.unshift(newDoc);
-        }
-        
-        // Save documents to localStorage for user dashboard access
-        localStorage.setItem('documents', JSON.stringify(adminDocuments));
-        
-    }, 2000);
+    }
 }
 
 // Clear upload form
@@ -723,13 +1101,164 @@ function editDocument(id) {
 }
 
 function deleteDocument(id) {
-    const doc = adminDocuments.find(d => d.id === id);
+    const documents = JSON.parse(localStorage.getItem('documents') || '[]');
+    const doc = documents.find(d => d.id === id);
+    
     if (doc && confirm(`"${doc.title}" hujjatini o'chirishni xohlaysizmi?`)) {
-        adminDocuments = adminDocuments.filter(d => d.id !== id);
+        // Remove document from array
+        const filteredDocuments = documents.filter(d => d.id !== id);
+        
+        // Save to localStorage
+        localStorage.setItem('documents', JSON.stringify(filteredDocuments));
+        
+        // Update adminDocuments array
+        adminDocuments = filteredDocuments;
+        
+        // Log activity
+        logActivity('document', `Document deleted: ${doc.title}`, 'warning', { documentId: id, documentTitle: doc.title });
+        
         loadDocuments();
         updateStats();
         showNotification('Hujjat o\'chirildi', 'success');
     }
+}
+
+function editDocument(id) {
+    const documents = JSON.parse(localStorage.getItem('documents') || '[]');
+    const doc = documents.find(d => d.id === id);
+    
+    if (doc) {
+        showEditDocumentModal(doc);
+        logActivity('document', `Started editing document: ${doc.title}`, 'info', { documentId: id });
+    }
+}
+
+function showEditDocumentModal(doc) {
+    const subjects = JSON.parse(localStorage.getItem('subjects') || '[]');
+    
+    const modal = document.createElement('div');
+    modal.className = 'modal-overlay';
+    modal.innerHTML = `
+        <div class="modal document-modal">
+            <div class="modal-header">
+                <h3><i class="fas fa-edit"></i> Hujjatni tahrirlash</h3>
+                <button class="modal-close" onclick="closeModal()">&times;</button>
+            </div>
+            <div class="modal-content">
+                <form id="editDocumentForm">
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label for="editTitle">Sarlavha *</label>
+                            <input type="text" id="editTitle" value="${doc.title}" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="editSubject">Fan *</label>
+                            <select id="editSubject" required>
+                                <option value="">Fanni tanlang</option>
+                                ${subjects.map(subject => 
+                                    `<option value="${subject.id}" ${subject.id === doc.subject ? 'selected' : ''}>${subject.name}</option>`
+                                ).join('')}
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="editAuthor">Muallif</label>
+                            <input type="text" id="editAuthor" value="${doc.author || ''}">
+                        </div>
+                        <div class="form-group">
+                            <label for="editFormat">Format</label>
+                            <select id="editFormat">
+                                <option value="pdf" ${doc.format === 'pdf' ? 'selected' : ''}>PDF</option>
+                                <option value="ppt" ${doc.format === 'ppt' ? 'selected' : ''}>PowerPoint</option>
+                                <option value="doc" ${doc.format === 'doc' ? 'selected' : ''}>Word</option>
+                                <option value="xlsx" ${doc.format === 'xlsx' ? 'selected' : ''}>Excel</option>
+                            </select>
+                        </div>
+                        <div class="form-group full-width">
+                            <label for="editDescription">Tavsif</label>
+                            <textarea id="editDescription" rows="3">${doc.description || ''}</textarea>
+                        </div>
+                        <div class="form-group full-width">
+                            <label for="editTags">Teglar (vergul bilan ajrating)</label>
+                            <input type="text" id="editTags" value="${(doc.tags || []).join(', ')}">
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-actions">
+                <button class="btn btn-primary" onclick="saveDocumentChanges(${doc.id})">
+                    <i class="fas fa-save"></i> Saqlash
+                </button>
+                <button class="btn btn-secondary" onclick="closeModal()">Bekor qilish</button>
+            </div>
+        </div>
+    `;
+    
+    document.body.appendChild(modal);
+    modal.style.display = 'flex';
+}
+
+function saveDocumentChanges(id) {
+    const documents = JSON.parse(localStorage.getItem('documents') || '[]');
+    const docIndex = documents.findIndex(d => d.id === id);
+    
+    if (docIndex === -1) {
+        showNotification('Hujjat topilmadi', 'error');
+        return;
+    }
+    
+    // Get form values
+    const title = document.getElementById('editTitle').value.trim();
+    const subject = document.getElementById('editSubject').value;
+    const author = document.getElementById('editAuthor').value.trim();
+    const format = document.getElementById('editFormat').value;
+    const description = document.getElementById('editDescription').value.trim();
+    const tags = document.getElementById('editTags').value.split(',').map(tag => tag.trim()).filter(tag => tag);
+    
+    // Validate required fields
+    if (!title) {
+        showNotification('Sarlavha majburiy', 'error');
+        return;
+    }
+    
+    if (!subject) {
+        showNotification('Fan majburiy', 'error');
+        return;
+    }
+    
+    // Update document
+    const oldDoc = { ...documents[docIndex] };
+    documents[docIndex] = {
+        ...documents[docIndex],
+        title,
+        subject,
+        author,
+        format,
+        description,
+        tags,
+        updatedAt: new Date().toISOString()
+    };
+    
+    // Save to localStorage
+    localStorage.setItem('documents', JSON.stringify(documents));
+    
+    // Update adminDocuments array
+    adminDocuments = documents;
+    
+    // Log activity
+    logActivity('document', `Document updated: ${title}`, 'success', { 
+        documentId: id, 
+        changes: {
+            title: oldDoc.title !== title ? { from: oldDoc.title, to: title } : null,
+            subject: oldDoc.subject !== subject ? { from: oldDoc.subject, to: subject } : null,
+            author: oldDoc.author !== author ? { from: oldDoc.author, to: author } : null,
+            format: oldDoc.format !== format ? { from: oldDoc.format, to: format } : null
+        }
+    });
+    
+    loadDocuments();
+    updateStats();
+    closeModal();
+    showNotification('Hujjat muvaffaqiyatli yangilandi', 'success');
 }
 
 // User actions
@@ -742,22 +1271,138 @@ function viewUser(id) {
 }
 
 function toggleUserStatus(id) {
-    const user = adminUsers.find(u => u.id === id);
-    if (user) {
+    const users = JSON.parse(localStorage.getItem('users') || '[]');
+    const userIndex = users.findIndex(u => u.id === id);
+    
+    if (userIndex !== -1) {
+        const user = users[userIndex];
+        const oldStatus = user.status;
         user.status = user.status === 'active' ? 'inactive' : 'active';
+        
+        // Save to localStorage
+        localStorage.setItem('users', JSON.stringify(users));
+        
+        // Update adminUsers array
+        adminUsers = users;
+        
+        // Log activity
+        logActivity('user', `User status changed: ${user.firstName} ${user.lastName} (${oldStatus} → ${user.status})`, 'info', { userId: id, oldStatus, newStatus: user.status });
+        
         loadUsers();
+        updateStats();
         showNotification(`Foydalanuvchi ${user.status === 'active' ? 'faollashtirildi' : 'nofaollashtirildi'}`, 'success');
     }
 }
 
 function deleteUser(id) {
-    const user = adminUsers.find(u => u.id === id);
+    const users = JSON.parse(localStorage.getItem('users') || '[]');
+    const user = users.find(u => u.id === id);
+    
     if (user && confirm(`${user.firstName} ${user.lastName} foydalanuvchisini o'chirishni xohlaysizmi?`)) {
-        adminUsers = adminUsers.filter(u => u.id !== id);
+        // Remove user from array
+        const filteredUsers = users.filter(u => u.id !== id);
+        
+        // Save to localStorage
+        localStorage.setItem('users', JSON.stringify(filteredUsers));
+        
+        // Update adminUsers array
+        adminUsers = filteredUsers;
+        
+        // Log activity
+        logActivity('user', `User deleted: ${user.firstName} ${user.lastName}`, 'warning', { userId: id, userEmail: user.email });
+        
         loadUsers();
         updateStats();
         showNotification('Foydalanuvchi o\'chirildi', 'success');
     }
+}
+
+function viewUser(id) {
+    const users = JSON.parse(localStorage.getItem('users') || '[]');
+    const user = users.find(u => u.id === id);
+    
+    if (user) {
+        // Create and show user details modal
+        showUserDetailsModal(user);
+        
+        // Log activity
+        logActivity('user', `Viewed user details: ${user.firstName} ${user.lastName}`, 'info', { userId: id });
+    }
+}
+
+function showUserDetailsModal(user) {
+    const modal = document.createElement('div');
+    modal.className = 'modal-overlay';
+    modal.innerHTML = `
+        <div class="modal user-modal">
+            <div class="modal-header">
+                <h3><i class="fas fa-user"></i> Foydalanuvchi ma'lumotlari</h3>
+                <button class="modal-close" onclick="closeModal()">&times;</button>
+            </div>
+            <div class="modal-content">
+                <div class="user-profile">
+                    <div class="user-avatar-section">
+                        <div class="user-avatar-large">
+                            <i class="fas fa-user"></i>
+                        </div>
+                        <h4>${user.firstName} ${user.lastName}</h4>
+                        <span class="user-status ${user.status}">${user.status === 'active' ? 'Faol' : 'Nofaol'}</span>
+                    </div>
+                    <div class="user-details-grid">
+                        <div class="detail-item">
+                            <label>Email:</label>
+                            <span>${user.email}</span>
+                        </div>
+                        <div class="detail-item">
+                            <label>Universitet:</label>
+                            <span>${user.university || 'Belgilanmagan'}</span>
+                        </div>
+                        <div class="detail-item">
+                            <label>Telefon:</label>
+                            <span>${user.phone || 'Belgilanmagan'}</span>
+                        </div>
+                        <div class="detail-item">
+                            <label>Ro'yxatdan o'tgan sana:</label>
+                            <span>${user.registrationDate ? new Date(user.registrationDate).toLocaleDateString('uz-UZ') : 'Noma\'lum'}</span>
+                        </div>
+                        <div class="detail-item">
+                            <label>Yuklab olingan fayllar:</label>
+                            <span>${user.downloads || 0} ta</span>
+                        </div>
+                        <div class="detail-item">
+                            <label>Sevimli fayllar:</label>
+                            <span>${user.favorites || 0} ta</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-actions">
+                <button class="btn btn-primary" onclick="editUser(${user.id})">
+                    <i class="fas fa-edit"></i> Tahrirlash
+                </button>
+                <button class="btn btn-${user.status === 'active' ? 'warning' : 'success'}" onclick="toggleUserStatus(${user.id}); closeModal();">
+                    <i class="fas fa-${user.status === 'active' ? 'ban' : 'check'}"></i> 
+                    ${user.status === 'active' ? 'Nofaollashtirish' : 'Faollashtirish'}
+                </button>
+                <button class="btn btn-secondary" onclick="closeModal()">Yopish</button>
+            </div>
+        </div>
+    `;
+    
+    document.body.appendChild(modal);
+    modal.style.display = 'flex';
+}
+
+function closeModal() {
+    const modal = document.querySelector('.modal-overlay');
+    if (modal) {
+        modal.remove();
+    }
+}
+
+function editUser(id) {
+    showNotification('Foydalanuvchi tahrirlash funksiyasi tez orada qo\'shiladi', 'info');
+    closeModal();
 }
 
 // Subject actions
@@ -1104,16 +1749,56 @@ function generateDownloadsChartData(days) {
     const data = [];
     const today = new Date();
     
+    // Get download history from localStorage
+    const downloadHistory = JSON.parse(localStorage.getItem('downloadHistory') || '[]');
+    
     for (let i = days - 1; i >= 0; i--) {
         const date = new Date(today);
         date.setDate(date.getDate() - i);
+        const dateStr = date.toISOString().split('T')[0]; // YYYY-MM-DD format
+        
         labels.push(date.toLocaleDateString('uz-UZ', { month: 'short', day: 'numeric' }));
-        // Simulate download data based on existing documents
-        const downloads = Math.floor(Math.random() * 50) + (adminDocuments.length * 2);
-        data.push(downloads);
+        
+        // Count downloads for this specific date
+        const downloadsForDate = downloadHistory.filter(download => {
+            const downloadDate = new Date(download.timestamp).toISOString().split('T')[0];
+            return downloadDate === dateStr;
+        }).length;
+        
+        data.push(downloadsForDate);
     }
     
     return { labels, data };
+}
+
+// Function to record download activity
+function recordDownload(documentId, userId = null) {
+    const downloadHistory = JSON.parse(localStorage.getItem('downloadHistory') || '[]');
+    const documents = JSON.parse(localStorage.getItem('documents') || '[]');
+    
+    const download = {
+        id: Date.now(),
+        documentId: documentId,
+        userId: userId,
+        timestamp: new Date().toISOString(),
+        userAgent: navigator.userAgent
+    };
+    
+    downloadHistory.push(download);
+    localStorage.setItem('downloadHistory', JSON.stringify(downloadHistory));
+    
+    // Update document download count
+    const docIndex = documents.findIndex(doc => doc.id === documentId);
+    if (docIndex !== -1) {
+        documents[docIndex].downloadCount = (documents[docIndex].downloadCount || 0) + 1;
+        localStorage.setItem('documents', JSON.stringify(documents));
+    }
+    
+    // Log activity
+    const doc = documents.find(d => d.id === documentId);
+    if (doc) {
+        logActivity('document', `Document downloaded: ${doc.title}`, 'info', { documentId, userId });
+    }
 }
 
 // Generate users chart data
@@ -1122,13 +1807,24 @@ function generateUsersChartData(days) {
     const data = [];
     const today = new Date();
     
+    // Get user registration history
+    const users = JSON.parse(localStorage.getItem('users') || '[]');
+    
     for (let i = days - 1; i >= 0; i--) {
         const date = new Date(today);
         date.setDate(date.getDate() - i);
+        const dateStr = date.toISOString().split('T')[0]; // YYYY-MM-DD format
+        
         labels.push(date.toLocaleDateString('uz-UZ', { month: 'short', day: 'numeric' }));
-        // Simulate user registration data
-        const newUsers = Math.floor(Math.random() * 10) + Math.floor(adminUsers.length / days);
-        data.push(newUsers);
+        
+        // Count user registrations for this specific date
+        const usersForDate = users.filter(user => {
+            if (!user.registrationDate) return false;
+            const userDate = new Date(user.registrationDate).toISOString().split('T')[0];
+            return userDate === dateStr;
+        }).length;
+        
+        data.push(usersForDate);
     }
     
     return { labels, data };
@@ -1136,36 +1832,41 @@ function generateUsersChartData(days) {
 
 // Generate subjects chart data
 function generateSubjectsChartData() {
-    const subjects = [
-        { name: 'Matematika', downloads: 0 },
-        { name: 'Fizika', downloads: 0 },
-        { name: 'Kimyo', downloads: 0 },
-        { name: 'Biologiya', downloads: 0 },
-        { name: 'Tarix', downloads: 0 },
-        { name: 'Geografiya', downloads: 0 },
-        { name: 'Adabiyot', downloads: 0 },
-        { name: 'Ingliz tili', downloads: 0 }
-    ];
+    const documents = JSON.parse(localStorage.getItem('documents') || '[]');
+    const subjects = JSON.parse(localStorage.getItem('subjects') || '[]');
     
-    // Calculate actual downloads per subject
-    adminDocuments.forEach(doc => {
-        const subject = subjects.find(s => s.name === getSubjectName(doc.subject));
-        if (subject) {
-            subject.downloads += doc.downloadCount || 0;
-        }
-    });
+    // Create subject statistics from real data
+    const subjectStats = {};
     
-    // Add some base values for visualization
+    // Initialize subjects
     subjects.forEach(subject => {
-        if (subject.downloads === 0) {
-            subject.downloads = Math.floor(Math.random() * 20) + 5;
+        subjectStats[subject.id] = {
+            name: subject.name,
+            downloads: 0,
+            documents: 0
+        };
+    });
+    
+    // Calculate real statistics
+    documents.forEach(doc => {
+        if (subjectStats[doc.subject]) {
+            subjectStats[doc.subject].downloads += doc.downloadCount || 0;
+            subjectStats[doc.subject].documents += 1;
         }
     });
     
-    return {
-        labels: subjects.map(s => s.name),
-        data: subjects.map(s => s.downloads)
-    };
+    // Convert to arrays for chart
+    const labels = [];
+    const data = [];
+    
+    Object.values(subjectStats).forEach(subject => {
+        if (subject.documents > 0) { // Only include subjects with documents
+            labels.push(subject.name);
+            data.push(subject.downloads);
+        }
+    });
+    
+    return { labels, data };
 }
 
 // Update charts based on period selection
@@ -1658,13 +2359,61 @@ function archiveAuditLogs() {
     }, 4000);
 }
 
+// Real settings management
+function loadSystemSettings() {
+    const settings = JSON.parse(localStorage.getItem('systemSettings') || '{}');
+    
+    // Set default settings if none exist
+    const defaultSettings = {
+        siteName: 'Sukun Slide',
+        siteDescription: 'Ta\'lim resurslari platformasi',
+        maxFileSize: 50, // MB
+        allowedFormats: ['pdf', 'ppt', 'pptx', 'doc', 'docx', 'xlsx'],
+        autoApprove: false,
+        requireAuth: true,
+        maintenanceMode: false,
+        emailNotifications: true,
+        backupFrequency: 'daily',
+        sessionTimeout: 30 // minutes
+    };
+    
+    // Merge with defaults
+    const finalSettings = { ...defaultSettings, ...settings };
+    localStorage.setItem('systemSettings', JSON.stringify(finalSettings));
+    
+    return finalSettings;
+}
+
+function saveSystemSettings(newSettings) {
+    const currentSettings = loadSystemSettings();
+    const updatedSettings = { ...currentSettings, ...newSettings };
+    
+    localStorage.setItem('systemSettings', JSON.stringify(updatedSettings));
+    logActivity('system', 'System settings updated', 'info', { settings: newSettings });
+    
+    return updatedSettings;
+}
+
 // Form submission handlers for settings
 document.addEventListener('DOMContentLoaded', function() {
+    // Load current settings when page loads
+    loadSystemSettings();
+    
     // General settings form
     const generalForm = document.getElementById('generalSettingsForm');
     if (generalForm) {
         generalForm.addEventListener('submit', function(e) {
             e.preventDefault();
+            
+            const formData = new FormData(this);
+            const settings = {
+                siteName: formData.get('siteName') || 'Sukun Slide',
+                siteDescription: formData.get('siteDescription') || '',
+                maintenanceMode: formData.has('maintenanceMode'),
+                requireAuth: formData.has('requireAuth')
+            };
+            
+            saveSystemSettings(settings);
             showNotification('Umumiy sozlamalar saqlandi!', 'success');
         });
     }
@@ -1674,6 +2423,15 @@ document.addEventListener('DOMContentLoaded', function() {
     if (fileForm) {
         fileForm.addEventListener('submit', function(e) {
             e.preventDefault();
+            
+            const formData = new FormData(this);
+            const settings = {
+                maxFileSize: parseInt(formData.get('maxFileSize')) || 50,
+                autoApprove: formData.has('autoApprove'),
+                allowedFormats: formData.getAll('allowedFormats')
+            };
+            
+            saveSystemSettings(settings);
             showNotification('Fayl sozlamalari saqlandi!', 'success');
         });
     }

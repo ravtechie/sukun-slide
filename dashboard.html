@@ -10,6 +10,11 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
 <body>
+    <!-- Mobile Menu Button -->
+    <button class="mobile-menu-btn" onclick="toggleMobileSidebar()" style="display: none;">
+        <i class="fas fa-bars"></i>
+    </button>
+    
     <!-- User Navigation -->
     <nav class="user-navbar">
         <div class="nav-container">
@@ -19,13 +24,18 @@
             </div>
             <div class="nav-user">
                 <div class="user-info">
-                    <img src="https://via.placeholder.com/40" alt="User" class="user-avatar">
+                    <div class="user-avatar">
+                        <i class="fas fa-user"></i>
+                    </div>
                     <div class="user-details">
                         <span class="user-name" id="userName">Foydalanuvchi</span>
                         <span class="user-role">Talaba</span>
                     </div>
                 </div>
                 <div class="nav-actions">
+                    <button class="nav-btn dark-mode-toggle" onclick="toggleDarkMode()" title="Tungi rejim">
+                        <i class="fas fa-moon" id="darkModeIcon"></i>
+                    </button>
                     <button class="nav-btn" onclick="toggleNotifications()">
                         <i class="fas fa-bell"></i>
                         <span class="notification-badge">2</span>
@@ -40,7 +50,7 @@
 
     <div class="dashboard-container">
         <!-- Sidebar -->
-        <aside class="dashboard-sidebar">
+        <aside class="dashboard-sidebar sidebar" id="mobileSidebar">
             <div class="sidebar-menu">
                 <a href="#overview" class="menu-item active" data-section="overview">
                     <i class="fas fa-tachometer-alt"></i>
@@ -73,160 +83,420 @@
         <main class="dashboard-main">
             <!-- Overview Section -->
             <section id="overview" class="dashboard-section active">
-                <div class="section-header">
-                    <h1>Xush kelibsiz!</h1>
-                    <p>O'quv materiallarini oson toping va yuklab oling</p>
+                <div class="section-header enhanced">
+                    <div class="welcome-content">
+                        <div class="welcome-text">
+                            <h1>Xush kelibsiz! 👋</h1>
+                            <p>O'quv materiallarini oson toping va yuklab oling</p>
+                        </div>
+                        <div class="welcome-actions">
+                            <button class="btn btn-primary" onclick="showSection('documents')">
+                                <i class="fas fa-search"></i>
+                                Hujjat qidirish
+                            </button>
+                            <button class="btn btn-outline" onclick="createSampleDocuments()">
+                                <i class="fas fa-plus"></i>
+                                Test ma'lumotlari
+                            </button>
+                        </div>
+                    </div>
                 </div>
 
-                <div class="stats-grid">
-                    <div class="stat-card">
+                <div class="stats-grid enhanced">
+                    <div class="stat-card downloads">
+                        <div class="stat-background">
+                            <i class="fas fa-download"></i>
+                        </div>
                         <div class="stat-icon">
                             <i class="fas fa-download"></i>
                         </div>
                         <div class="stat-content">
                             <h3 id="totalDownloads">0</h3>
                             <p>Yuklab olingan</p>
+                            <span class="stat-change">+12% bu oy</span>
                         </div>
                     </div>
-                    <div class="stat-card">
+                    <div class="stat-card favorites">
+                        <div class="stat-background">
+                            <i class="fas fa-heart"></i>
+                        </div>
                         <div class="stat-icon">
                             <i class="fas fa-heart"></i>
                         </div>
                         <div class="stat-content">
                             <h3 id="totalFavorites">0</h3>
                             <p>Sevimlilar</p>
+                            <span class="stat-change">+5 yangi</span>
                         </div>
                     </div>
-                    <div class="stat-card">
+                    <div class="stat-card activity">
+                        <div class="stat-background">
+                            <i class="fas fa-chart-line"></i>
+                        </div>
                         <div class="stat-icon">
-                            <i class="fas fa-clock"></i>
+                            <i class="fas fa-chart-line"></i>
                         </div>
                         <div class="stat-content">
                             <h3 id="recentActivity">0</h3>
-                            <p>Oxirgi faoliyat</p>
+                            <p>Faol kunlar</p>
+                            <span class="stat-change">Bu hafta</span>
+                        </div>
+                    </div>
+                    <div class="stat-card documents">
+                        <div class="stat-background">
+                            <i class="fas fa-file-alt"></i>
+                        </div>
+                        <div class="stat-icon">
+                            <i class="fas fa-file-alt"></i>
+                        </div>
+                        <div class="stat-content">
+                            <h3 id="totalDocuments">0</h3>
+                            <p>Mavjud hujjatlar</p>
+                            <span class="stat-change">Jami</span>
                         </div>
                     </div>
                 </div>
 
-                <div class="dashboard-grid">
-                    <div class="dashboard-card">
+                <div class="dashboard-grid enhanced">
+                    <div class="dashboard-card recent-downloads-card">
                         <div class="card-header">
-                            <h3>Oxirgi yuklab olingan</h3>
-                            <a href="#downloads" class="btn btn-sm">Barchasini ko'rish</a>
+                            <div class="card-title">
+                                <i class="fas fa-history"></i>
+                                <h3>Oxirgi yuklab olingan</h3>
+                            </div>
+                            <a href="#downloads" class="btn btn-sm btn-outline" onclick="showSection('downloads')">
+                                <i class="fas fa-arrow-right"></i>
+                                Barchasini ko'rish
+                            </a>
                         </div>
-                        <div class="recent-downloads" id="recentDownloads">
+                        <div class="recent-downloads enhanced" id="recentDownloads">
                             <!-- Recent downloads will be populated by JavaScript -->
                         </div>
                     </div>
 
-                    <div class="dashboard-card">
+                    <div class="dashboard-card recommended-card">
                         <div class="card-header">
-                            <h3>Tavsiya etilgan</h3>
-                            <a href="index.html#subjects" class="btn btn-sm">Barcha fanlar</a>
+                            <div class="card-title">
+                                <i class="fas fa-star"></i>
+                                <h3>Tavsiya etilgan</h3>
+                            </div>
+                            <a href="index.html#subjects" class="btn btn-sm btn-outline">
+                                <i class="fas fa-external-link-alt"></i>
+                                Barcha fanlar
+                            </a>
                         </div>
-                        <div class="recommended-documents" id="recommendedDocuments">
+                        <div class="recommended-documents enhanced" id="recommendedDocuments">
                             <!-- Recommended documents will be populated by JavaScript -->
                         </div>
+                    </div>
+                </div>
+
+                <!-- Quick Actions -->
+                <div class="quick-actions">
+                    <h3>Tezkor harakatlar</h3>
+                    <div class="quick-actions-grid">
+                        <button class="quick-action-card" onclick="showSection('documents')">
+                            <i class="fas fa-search"></i>
+                            <span>Qidiruv</span>
+                        </button>
+                        <button class="quick-action-card" onclick="showSection('favorites')">
+                            <i class="fas fa-heart"></i>
+                            <span>Sevimlilar</span>
+                        </button>
+                        <button class="quick-action-card" onclick="showSection('downloads')">
+                            <i class="fas fa-download"></i>
+                            <span>Yuklanganlar</span>
+                        </button>
+                        <button class="quick-action-card" onclick="showSection('profile')">
+                            <i class="fas fa-user"></i>
+                            <span>Profil</span>
+                        </button>
                     </div>
                 </div>
             </section>
 
             <!-- Documents Section -->
             <section id="documents" class="dashboard-section">
-                <div class="section-header">
-                    <h1>Barcha hujjatlar</h1>
-                    <div class="header-actions">
-                        <div class="search-box">
-                            <i class="fas fa-search"></i>
-                            <input type="text" id="documentSearch" placeholder="Hujjatlarni qidiring...">
+                <div class="section-header enhanced">
+                    <div class="section-title">
+                        <h1><i class="fas fa-file-alt"></i> Barcha hujjatlar</h1>
+                        <p>Barcha mavjud o'quv materiallarini ko'ring va yuklab oling</p>
+                    </div>
+                    <div class="header-stats">
+                        <div class="stat-badge">
+                            <span id="documentsCount">0</span>
+                            <label>Jami hujjat</label>
                         </div>
-                        <select class="filter-select" id="subjectFilter">
-                            <option value="">Barcha fanlar</option>
-                            <option value="mathematics">Matematika</option>
-                            <option value="physics">Fizika</option>
-                            <option value="chemistry">Kimyo</option>
-                            <option value="biology">Biologiya</option>
-                            <option value="history">Tarix</option>
-                            <option value="geography">Geografiya</option>
-                            <option value="literature">Adabiyot</option>
-                            <option value="english">Ingliz tili</option>
-                        </select>
-                        <select class="filter-select" id="formatFilter">
-                            <option value="">Barcha formatlar</option>
-                            <option value="ppt">PowerPoint</option>
-                            <option value="pdf">PDF</option>
-                            <option value="doc">Word</option>
-                            <option value="xlsx">Excel</option>
-                        </select>
                     </div>
                 </div>
 
-                <div class="documents-grid" id="allDocumentsGrid">
+                <div class="filters-container">
+                    <div class="search-section">
+                        <div class="search-box enhanced">
+                            <i class="fas fa-search"></i>
+                            <input type="text" id="documentSearch" placeholder="Hujjat nomi, muallif yoki tavsif bo'yicha qidiring...">
+                            <button class="search-clear" onclick="clearDocumentSearch()">
+                                <i class="fas fa-times"></i>
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div class="filters-section">
+                        <div class="filter-group">
+                            <label>Fan bo'yicha:</label>
+                            <select class="filter-select enhanced" id="subjectFilter">
+                                <option value="">Barcha fanlar</option>
+                                <option value="mathematics">📊 Matematika</option>
+                                <option value="physics">⚛️ Fizika</option>
+                                <option value="chemistry">🧪 Kimyo</option>
+                                <option value="biology">🧬 Biologiya</option>
+                                <option value="history">🏛️ Tarix</option>
+                                <option value="geography">🌍 Geografiya</option>
+                                <option value="literature">📚 Adabiyot</option>
+                                <option value="english">🇺🇸 Ingliz tili</option>
+                            </select>
+                        </div>
+                        
+                        <div class="filter-group">
+                            <label>Format bo'yicha:</label>
+                            <select class="filter-select enhanced" id="formatFilter">
+                                <option value="">Barcha formatlar</option>
+                                <option value="ppt">📊 PowerPoint</option>
+                                <option value="pdf">📄 PDF</option>
+                                <option value="doc">📝 Word</option>
+                                <option value="xlsx">📈 Excel</option>
+                            </select>
+                        </div>
+                        
+                        <div class="filter-group">
+                            <label>Tartiblash:</label>
+                            <select class="filter-select enhanced" id="sortFilter">
+                                <option value="newest">🆕 Eng yangi</option>
+                                <option value="oldest">⏰ Eng eski</option>
+                                <option value="popular">🔥 Mashhur</option>
+                                <option value="name">🔤 Nom bo'yicha</option>
+                            </select>
+                        </div>
+                        
+                        <button class="btn btn-outline filter-reset" onclick="resetFilters()">
+                            <i class="fas fa-undo"></i>
+                            Tozalash
+                        </button>
+                    </div>
+                </div>
+
+                <div class="documents-grid enhanced" id="allDocumentsGrid">
                     <!-- All available documents will be populated by JavaScript -->
                 </div>
                 
-                <div class="load-more-container">
+                <div class="load-more-container enhanced">
                     <button class="btn btn-outline" id="loadMoreBtn" onclick="loadMoreDocuments()">
-                        <i class="fas fa-plus"></i> Ko'proq yuklash
+                        <i class="fas fa-chevron-down"></i>
+                        Ko'proq yuklash
                     </button>
+                    <div class="load-info">
+                        <span id="loadedCount">0</span> dan <span id="totalCount">0</span> ta ko'rsatilmoqda
+                    </div>
                 </div>
             </section>
 
             <!-- Downloads Section -->
             <section id="downloads" class="dashboard-section">
-                <div class="section-header">
-                    <h1>Yuklab olingan hujjatlar</h1>
-                    <div class="header-actions">
-                        <div class="search-box">
-                            <i class="fas fa-search"></i>
-                            <input type="text" placeholder="Yuklab olingan hujjatlarni qidiring...">
+                <div class="section-header enhanced">
+                    <div class="section-title">
+                        <h1><i class="fas fa-download"></i> Yuklab olingan hujjatlar</h1>
+                        <p>Siz yuklab olgan barcha hujjatlaringiz tarixi</p>
+                    </div>
+                    <div class="header-stats">
+                        <div class="stat-badge">
+                            <span id="downloadsCount">0</span>
+                            <label>Jami yuklanma</label>
                         </div>
-                        <select class="filter-select">
-                            <option value="">Barcha vaqt</option>
-                            <option value="today">Bugun</option>
-                            <option value="week">Bu hafta</option>
-                            <option value="month">Bu oy</option>
-                        </select>
                     </div>
                 </div>
 
-                <div class="downloads-list" id="downloadsList">
+                <div class="downloads-filters">
+                    <div class="search-section">
+                        <div class="search-box enhanced">
+                            <i class="fas fa-search"></i>
+                            <input type="text" id="downloadsSearch" placeholder="Yuklab olingan hujjatlarni qidiring...">
+                            <button class="search-clear" onclick="clearDownloadsSearch()">
+                                <i class="fas fa-times"></i>
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div class="filter-controls">
+                        <div class="filter-group">
+                            <label>Vaqt bo'yicha:</label>
+                            <select class="filter-select enhanced" id="timeFilter">
+                                <option value="">Barcha vaqt</option>
+                                <option value="today">📅 Bugun</option>
+                                <option value="week">📅 Bu hafta</option>
+                                <option value="month">📅 Bu oy</option>
+                                <option value="year">📅 Bu yil</option>
+                            </select>
+                        </div>
+                        
+                        <div class="filter-group">
+                            <label>Format bo'yicha:</label>
+                            <select class="filter-select enhanced" id="downloadsFormatFilter">
+                                <option value="">Barcha formatlar</option>
+                                <option value="pdf">📄 PDF</option>
+                                <option value="ppt">📊 PowerPoint</option>
+                                <option value="doc">📝 Word</option>
+                                <option value="xlsx">📈 Excel</option>
+                            </select>
+                        </div>
+                        
+                        <button class="btn btn-outline export-btn" onclick="exportDownloads()">
+                            <i class="fas fa-file-export"></i>
+                            Eksport
+                        </button>
+                    </div>
+                </div>
+
+                <div class="downloads-list enhanced" id="downloadsList">
                     <!-- Downloads will be populated by JavaScript -->
+                </div>
+                
+                <div class="downloads-summary">
+                    <div class="summary-stats">
+                        <div class="summary-item">
+                            <i class="fas fa-file"></i>
+                            <div>
+                                <span class="summary-number" id="downloadsThisMonth">0</span>
+                                <span class="summary-label">Bu oy yuklanma</span>
+                            </div>
+                        </div>
+                        <div class="summary-item">
+                            <i class="fas fa-hdd"></i>
+                            <div>
+                                <span class="summary-number" id="totalSize">0 MB</span>
+                                <span class="summary-label">Jami hajm</span>
+                            </div>
+                        </div>
+                        <div class="summary-item">
+                            <i class="fas fa-heart"></i>
+                            <div>
+                                <span class="summary-number" id="favoritesFromDownloads">0</span>
+                                <span class="summary-label">Sevimli qilingan</span>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </section>
 
             <!-- Favorites Section -->
             <section id="favorites" class="dashboard-section">
-                <div class="section-header">
-                    <h1>Sevimli hujjatlar</h1>
-                    <p>Sevimli qilingan o'quv materiallari</p>
+                <div class="section-header enhanced">
+                    <div class="section-title">
+                        <h1><i class="fas fa-heart"></i> Sevimli hujjatlar</h1>
+                        <p>Sevimli qilingan o'quv materiallari to'plami</p>
+                    </div>
+                    <div class="header-stats">
+                        <div class="stat-badge">
+                            <span id="favoritesCount">0</span>
+                            <label>Sevimli</label>
+                        </div>
+                    </div>
                 </div>
 
-                <div class="favorites-grid" id="favoritesGrid">
+                <div class="favorites-controls">
+                    <div class="search-section">
+                        <div class="search-box enhanced">
+                            <i class="fas fa-search"></i>
+                            <input type="text" id="favoritesSearch" placeholder="Sevimli hujjatlar ichidan qidiring...">
+                            <button class="search-clear" onclick="clearFavoritesSearch()">
+                                <i class="fas fa-times"></i>
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div class="favorites-actions">
+                        <div class="filter-group">
+                            <label>Tartiblash:</label>
+                            <select class="filter-select enhanced" id="favoritesSort">
+                                <option value="recent">⏰ Oxirgi qo'shilgan</option>
+                                <option value="name">🔤 Nom bo'yicha</option>
+                                <option value="subject">📚 Fan bo'yicha</option>
+                                <option value="format">📄 Format bo'yicha</option>
+                            </select>
+                        </div>
+                        
+                        <button class="btn btn-outline" onclick="exportFavorites()">
+                            <i class="fas fa-share"></i>
+                            Ulashish
+                        </button>
+                        
+                        <button class="btn btn-danger" onclick="clearAllFavorites()">
+                            <i class="fas fa-trash"></i>
+                            Barchasini o'chirish
+                        </button>
+                    </div>
+                </div>
+
+                <div class="favorites-grid enhanced" id="favoritesGrid">
                     <!-- Favorites will be populated by JavaScript -->
+                </div>
+                
+                <div class="favorites-tips">
+                    <div class="tip-card">
+                        <i class="fas fa-lightbulb"></i>
+                        <div>
+                            <h4>Maslahat:</h4>
+                            <p>Hujjatlarni sevimli qilish uchun yurak belgisini bosing. Sevimli hujjatlaringiz bu yerda saqlanadi.</p>
+                        </div>
+                    </div>
                 </div>
             </section>
 
             <!-- Profile Section -->
             <section id="profile" class="dashboard-section">
-                <div class="section-header">
-                    <h1>Profil ma'lumotlari</h1>
-                    <p>Shaxsiy ma'lumotlaringizni boshqaring</p>
+                <div class="section-header enhanced">
+                    <div class="section-title">
+                        <h1><i class="fas fa-user"></i> Profil ma'lumotlari</h1>
+                        <p>Shaxsiy ma'lumotlaringizni boshqaring va sozlang</p>
+                    </div>
+                    <div class="profile-actions">
+                        <button class="btn btn-outline" onclick="exportProfile()">
+                            <i class="fas fa-download"></i>
+                            Ma'lumotlarni yuklab olish
+                        </button>
+                    </div>
                 </div>
 
-                <div class="profile-container">
-                    <div class="profile-card">
-                        <div class="profile-header">
-                            <div class="profile-avatar">
-                                <img src="https://via.placeholder.com/120" alt="Profile" id="profileImage">
-                                <button class="avatar-edit" onclick="changeAvatar()">
+                <div class="profile-container enhanced">
+                    <div class="profile-card main-profile">
+                        <div class="profile-header enhanced">
+                            <div class="profile-avatar enhanced">
+                                <div class="profile-avatar-icon" id="profileImage">
+                                    <i class="fas fa-user-circle"></i>
+                                </div>
+                                <button class="avatar-edit" onclick="changeAvatar()" title="Avatar o'zgartirish">
                                     <i class="fas fa-camera"></i>
                                 </button>
+                                <div class="avatar-options">
+                                    <span>Avatar o'zgartirish uchun bosing</span>
+                                </div>
                             </div>
-                            <div class="profile-info">
+                            <div class="profile-info enhanced">
                                 <h2 id="profileName">Foydalanuvchi Ismi</h2>
-                                <p id="profileEmail">user@example.com</p>
-                                <p id="profileUniversity">Universitet nomi</p>
+                                <div class="profile-badges">
+                                    <span class="profile-badge active">
+                                        <i class="fas fa-user-graduate"></i>
+                                        Talaba
+                                    </span>
+                                    <span class="profile-badge verified">
+                                        <i class="fas fa-check-circle"></i>
+                                        Tasdiqlangan
+                                    </span>
+                                </div>
+                                <div class="profile-details">
+                                    <p><i class="fas fa-envelope"></i> <span id="profileEmail">user@example.com</span></p>
+                                    <p><i class="fas fa-university"></i> <span id="profileUniversity">Universitet nomi</span></p>
+                                    <p><i class="fas fa-calendar"></i> <span id="joinDate">Ro'yxatdan o'tgan: 2024</span></p>
+                                </div>
                             </div>
                         </div>
 
@@ -308,26 +578,51 @@
 
             <!-- Settings Section -->
             <section id="settings" class="dashboard-section">
-                <div class="section-header">
-                    <h1>Sozlamalar</h1>
-                    <p>Hisobingiz va platforma sozlamalarini boshqaring</p>
+                <div class="section-header enhanced">
+                    <div class="section-title">
+                        <h1><i class="fas fa-cog"></i> Sozlamalar</h1>
+                        <p>Hisobingiz va platforma sozlamalarini boshqaring</p>
+                    </div>
+                    <div class="settings-actions">
+                        <button class="btn btn-outline" onclick="resetAllSettings()">
+                            <i class="fas fa-undo"></i>
+                            Standart sozlamalar
+                        </button>
+                    </div>
                 </div>
 
-                <div class="settings-grid">
-                    <div class="settings-card">
+                <div class="settings-grid enhanced">
+                    <div class="settings-card security">
+                        <div class="card-icon">
+                            <i class="fas fa-shield-alt"></i>
+                        </div>
                         <h3>Xavfsizlik</h3>
+                        <p>Parol va kirish sozlamalari</p>
                         <form class="settings-form" id="passwordForm">
-                            <div class="form-group">
-                                <label for="currentPassword">Joriy parol</label>
-                                <input type="password" id="currentPassword" required>
+                            <div class="form-group enhanced">
+                                <label for="currentPassword">
+                                    <i class="fas fa-lock"></i>
+                                    Joriy parol
+                                </label>
+                                <input type="password" id="currentPassword" required placeholder="Joriy parolingizni kiriting">
                             </div>
-                            <div class="form-group">
-                                <label for="newPassword">Yangi parol</label>
-                                <input type="password" id="newPassword" required>
+                            <div class="form-group enhanced">
+                                <label for="newPassword">
+                                    <i class="fas fa-key"></i>
+                                    Yangi parol
+                                </label>
+                                <input type="password" id="newPassword" required placeholder="Yangi parol (kamida 8 belgi)">
+                                <div class="password-strength">
+                                    <div class="strength-bar"></div>
+                                    <span class="strength-text">Parol mustahkamligi</span>
+                                </div>
                             </div>
-                            <div class="form-group">
-                                <label for="confirmNewPassword">Yangi parolni tasdiqlang</label>
-                                <input type="password" id="confirmNewPassword" required>
+                            <div class="form-group enhanced">
+                                <label for="confirmNewPassword">
+                                    <i class="fas fa-check"></i>
+                                    Yangi parolni tasdiqlang
+                                </label>
+                                <input type="password" id="confirmNewPassword" required placeholder="Yangi parolni qayta kiriting">
                             </div>
                             <button type="submit" class="btn btn-primary">
                                 <i class="fas fa-key"></i>
@@ -336,28 +631,41 @@
                         </form>
                     </div>
 
-                    <div class="settings-card">
+                    <div class="settings-card notifications">
+                        <div class="card-icon">
+                            <i class="fas fa-bell"></i>
+                        </div>
                         <h3>Bildirishnomalar</h3>
+                        <p>Email va push bildirishnomalari</p>
                         <form class="settings-form" id="notificationsForm">
-                            <div class="form-group">
-                                <label class="checkbox-label">
+                            <div class="form-group enhanced">
+                                <label class="checkbox-label enhanced">
                                     <input type="checkbox" id="emailNotifications" checked>
                                     <span class="checkmark"></span>
-                                    Email bildirishnomalari
+                                    <div class="checkbox-content">
+                                        <span class="checkbox-title">Email bildirishnomalari</span>
+                                        <span class="checkbox-description">Muhim yangiliklar email orqali</span>
+                                    </div>
                                 </label>
                             </div>
-                            <div class="form-group">
-                                <label class="checkbox-label">
+                            <div class="form-group enhanced">
+                                <label class="checkbox-label enhanced">
                                     <input type="checkbox" id="newDocuments" checked>
                                     <span class="checkmark"></span>
-                                    Yangi hujjatlar haqida xabar
+                                    <div class="checkbox-content">
+                                        <span class="checkbox-title">Yangi hujjatlar haqida xabar</span>
+                                        <span class="checkbox-description">Yangi materiallar qo'shilganda xabar</span>
+                                    </div>
                                 </label>
                             </div>
-                            <div class="form-group">
-                                <label class="checkbox-label">
+                            <div class="form-group enhanced">
+                                <label class="checkbox-label enhanced">
                                     <input type="checkbox" id="weeklyDigest">
                                     <span class="checkmark"></span>
-                                    Haftalik xulosa
+                                    <div class="checkbox-content">
+                                        <span class="checkbox-title">Haftalik xulosa</span>
+                                        <span class="checkbox-description">Haftalik faoliyat hisoboti</span>
+                                    </div>
                                 </label>
                             </div>
                             <button type="submit" class="btn btn-primary">
@@ -367,13 +675,72 @@
                         </form>
                     </div>
 
-                    <div class="settings-card">
-                        <h3>Hisobni o'chirish</h3>
-                        <p>Hisobingizni butunlay o'chirish mumkin. Bu amal qaytarib bo'lmaydi.</p>
-                        <button type="button" class="btn btn-danger" onclick="deleteAccount()">
-                            <i class="fas fa-trash"></i>
-                            Hisobni o'chirish
-                        </button>
+                    <div class="settings-card preferences">
+                        <div class="card-icon">
+                            <i class="fas fa-palette"></i>
+                        </div>
+                        <h3>Interfeys</h3>
+                        <p>Ko'rinish va til sozlamalari</p>
+                        <form class="settings-form" id="preferencesForm">
+                            <div class="form-group enhanced">
+                                <label for="theme">
+                                    <i class="fas fa-moon"></i>
+                                    Mavzu
+                                </label>
+                                <select id="theme" class="filter-select enhanced">
+                                    <option value="light">🌞 Yorug' mavzu</option>
+                                    <option value="dark">🌙 Qorong'u mavzu</option>
+                                    <option value="auto">🔄 Avtomatik</option>
+                                </select>
+                            </div>
+                            <div class="form-group enhanced">
+                                <label for="language">
+                                    <i class="fas fa-language"></i>
+                                    Til
+                                </label>
+                                <select id="language" class="filter-select enhanced">
+                                    <option value="uz">🇺🇿 O'zbek tili</option>
+                                    <option value="ru">🇷🇺 Русский язык</option>
+                                    <option value="en">🇺🇸 English</option>
+                                </select>
+                            </div>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-save"></i>
+                                Saqlash
+                            </button>
+                        </form>
+                    </div>
+
+                    <div class="settings-card danger">
+                        <div class="card-icon danger">
+                            <i class="fas fa-exclamation-triangle"></i>
+                        </div>
+                        <h3>Xavfli amallar</h3>
+                        <p>Ehtiyotkorlik bilan bajaring</p>
+                        
+                        <div class="danger-actions">
+                            <div class="danger-item">
+                                <div class="danger-info">
+                                    <h4>Ma'lumotlarni tozalash</h4>
+                                    <p>Barcha yuklab olingan va sevimli hujjatlar o'chiriladi</p>
+                                </div>
+                                <button type="button" class="btn btn-warning" onclick="clearUserData()">
+                                    <i class="fas fa-broom"></i>
+                                    Tozalash
+                                </button>
+                            </div>
+                            
+                            <div class="danger-item">
+                                <div class="danger-info">
+                                    <h4>Hisobni o'chirish</h4>
+                                    <p>Hisobingizni butunlay o'chirish. Bu amal qaytarib bo'lmaydi.</p>
+                                </div>
+                                <button type="button" class="btn btn-danger" onclick="deleteAccount()">
+                                    <i class="fas fa-trash"></i>
+                                    Hisobni o'chirish
+                                </button>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </section>

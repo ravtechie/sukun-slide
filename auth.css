@@ -21,10 +21,10 @@
 .auth-card {
     background: rgba(255, 255, 255, 0.95);
     backdrop-filter: blur(20px);
-    border-radius: 24px;
-    padding: 3rem;
+    border-radius: 20px;
+    padding: 2rem;
     width: 100%;
-    max-width: 500px;
+    max-width: 420px;
     box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
     border: 1px solid rgba(255, 255, 255, 0.2);
     position: relative;
@@ -33,7 +33,7 @@
 
 .auth-header {
     text-align: center;
-    margin-bottom: 2rem;
+    margin-bottom: 1.5rem;
 }
 
 .auth-logo {
@@ -41,10 +41,10 @@
     align-items: center;
     justify-content: center;
     gap: 12px;
-    font-size: 1.8rem;
+    font-size: 1.6rem;
     font-weight: 700;
     color: var(--primary-color, #2563eb);
-    margin-bottom: 1.5rem;
+    margin-bottom: 1rem;
 }
 
 .auth-logo i {
@@ -52,13 +52,13 @@
 }
 
 .auth-logo .logo-img {
-    width: 50px;
-    height: 50px;
+    width: 40px;
+    height: 40px;
     object-fit: contain;
 }
 
 .auth-header h1 {
-    font-size: 2rem;
+    font-size: 1.75rem;
     font-weight: 700;
     color: #1f2937;
     margin-bottom: 0.5rem;
@@ -72,7 +72,7 @@
 .auth-form {
     display: flex;
     flex-direction: column;
-    gap: 1.5rem;
+    gap: 1.25rem;
 }
 
 .form-row {
@@ -97,6 +97,8 @@
     position: relative;
     display: flex;
     align-items: center;
+    width: 100%;
+    overflow: visible;
 }
 
 .input-group i {
@@ -118,6 +120,11 @@
     font-family: inherit;
 }
 
+/* Special padding for password inputs with toggle button */
+.input-group input[type="password"] {
+    padding-right: 52px;
+}
+
 .input-group input:focus,
 .input-group select:focus {
     outline: none;
@@ -137,18 +144,45 @@
 
 .password-toggle {
     position: absolute;
-    right: 16px;
+    right: 8px;
+    top: 50%;
+    transform: translateY(-50%);
     background: none;
     border: none;
     color: #9ca3af;
     cursor: pointer;
-    padding: 4px;
-    border-radius: 4px;
+    padding: 6px;
+    border-radius: 8px;
     transition: color 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    z-index: 2;
+    margin: 0;
+    outline: none;
 }
 
 .password-toggle:hover {
-    color: #6b7280;
+    color: var(--primary-color, #2563eb);
+}
+
+.password-toggle:active {
+    transform: translateY(-50%) scale(0.95);
+}
+
+.password-toggle:focus {
+    outline: none;
+}
+
+.password-toggle i {
+    font-size: 14px;
+    transition: all 0.3s ease;
+}
+
+.password-toggle:hover i {
+    transform: scale(1.1);
 }
 
 .password-strength {
@@ -318,73 +352,6 @@
     to { transform: rotate(360deg); }
 }
 
-.auth-divider {
-    text-align: center;
-    position: relative;
-    margin: 1.5rem 0;
-}
-
-.auth-divider::before {
-    content: '';
-    position: absolute;
-    top: 50%;
-    left: 0;
-    right: 0;
-    height: 1px;
-    background: #e5e7eb;
-}
-
-.auth-divider span {
-    background: rgba(255, 255, 255, 0.95);
-    padding: 0 1rem;
-    color: #6b7280;
-    font-size: 0.9rem;
-    position: relative;
-    z-index: 1;
-}
-
-.social-login {
-    display: flex;
-    flex-direction: column;
-    gap: 0.75rem;
-}
-
-.social-btn {
-    width: 100%;
-    padding: 14px;
-    border: 2px solid #e5e7eb;
-    border-radius: 12px;
-    background: white;
-    color: #374151;
-    font-size: 0.95rem;
-    font-weight: 500;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 12px;
-}
-
-.social-btn:hover {
-    border-color: #d1d5db;
-    transform: translateY(-1px);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-}
-
-.google-btn:hover {
-    border-color: #db4437;
-    color: #db4437;
-}
-
-.facebook-btn:hover {
-    border-color: #4267b2;
-    color: #4267b2;
-}
-
-.social-btn i {
-    font-size: 1.1rem;
-}
 
 .auth-footer {
     text-align: center;
@@ -595,13 +562,80 @@
         border-color: var(--primary-color, #2563eb);
     }
     
-    .social-btn {
-        background: #374151;
-        border-color: #4b5563;
-        color: #d1d5db;
+    
+    .password-toggle {
+        color: #9ca3af;
+    }
+    
+    .password-toggle:hover {
+        color: var(--primary-color, #3b82f6);
     }
     
     .auth-footer {
         border-top-color: #4b5563;
+    }
+}
+
+/* Mobile Responsiveness */
+@media (max-width: 768px) {
+    .auth-container {
+        padding: 15px;
+    }
+    
+    .auth-card {
+        padding: 1.5rem;
+        max-width: 100%;
+        border-radius: 16px;
+    }
+    
+    .auth-header {
+        margin-bottom: 1.25rem;
+    }
+    
+    .auth-logo {
+        font-size: 1.4rem;
+        margin-bottom: 0.75rem;
+    }
+    
+    .auth-logo .logo-img {
+        width: 36px;
+        height: 36px;
+    }
+    
+    .auth-header h1 {
+        font-size: 1.5rem;
+        margin-bottom: 0.25rem;
+    }
+    
+    .auth-header p {
+        font-size: 0.9rem;
+    }
+    
+    .auth-form {
+        gap: 1rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .auth-container {
+        padding: 10px;
+    }
+    
+    .auth-card {
+        padding: 1.25rem;
+        border-radius: 12px;
+    }
+    
+    .auth-header {
+        margin-bottom: 1rem;
+    }
+    
+    .auth-logo {
+        font-size: 1.3rem;
+        margin-bottom: 0.5rem;
+    }
+    
+    .auth-header h1 {
+        font-size: 1.375rem;
     }
 }

@@ -123,6 +123,7 @@ document.addEventListener('DOMContentLoaded', function() {
     updateHomepageStats();
     setupEventListeners();
     setupMobileNavigation();
+    setupNavbarScroll();
 });
 
 // Sync documents from admin panel
@@ -348,6 +349,9 @@ function handleFilter() {
 
 // Apply all filters
 function applyFilters() {
+    console.log('applyFilters called with filters:', currentFilters);
+    console.log('Total documents before filtering:', documentsData.length);
+    
     currentDocuments = documentsData.filter(doc => {
         const matchesSearch = !currentFilters.search || 
             doc.title.toLowerCase().includes(currentFilters.search) ||
@@ -359,6 +363,8 @@ function applyFilters() {
         
         return matchesSearch && matchesSubject && matchesFormat;
     });
+    
+    console.log('Filtered documents count:', currentDocuments.length);
     
     displayedDocuments = 6;
     renderDocuments();
@@ -456,14 +462,30 @@ function showAllDocuments() {
 
 // Filter by subject (from subject cards)
 function filterBySubject(subjectId) {
-    subjectFilter.value = subjectId;
+    console.log('filterBySubject called with:', subjectId);
+    
+    if (subjectFilter) {
+        subjectFilter.value = subjectId;
+        console.log('subjectFilter set to:', subjectId);
+    } else {
+        console.warn('subjectFilter element not found');
+    }
+    
     currentFilters.subject = subjectId;
+    console.log('currentFilters updated:', currentFilters);
+    
     applyFilters();
     
     // Scroll to documents section
-    document.getElementById('documents-section').scrollIntoView({
-        behavior: 'smooth'
-    });
+    const documentsSection = document.querySelector('.documents-section');
+    if (documentsSection) {
+        documentsSection.scrollIntoView({
+            behavior: 'smooth'
+        });
+        console.log('Scrolled to documents section');
+    } else {
+        console.warn('Documents section not found');
+    }
 }
 
 // Load more documents
@@ -1038,3 +1060,23 @@ function handleSwipe() {
         }
     }
 }
+
+// Navbar scroll effect
+function setupNavbarScroll() {
+    const navbar = document.querySelector('.navbar');
+    
+    if (!navbar) return;
+    
+    window.addEventListener('scroll', function() {
+        if (window.scrollY > 50) {
+            navbar.classList.add('scrolled');
+        } else {
+            navbar.classList.remove('scrolled');
+        }
+    });
+}
+
+// Make functions globally available for onclick handlers
+window.filterBySubject = filterBySubject;
+window.viewSubjectFiles = viewSubjectFiles;
+window.viewSubject = viewSubject;

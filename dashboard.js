@@ -68,6 +68,9 @@ document.addEventListener('DOMContentLoaded', function() {
     // Initialize notifications
     updateNotificationBadge();
     
+    // Initialize dark mode
+    initializeDarkMode();
+    
     // Debug: Log documents data to help with troubleshooting
     console.log('Documents loaded:', documentsData.length);
     if (documentsData.length > 0) {
@@ -120,6 +123,9 @@ function syncDocumentsFromMainSite() {
 function initializeDashboard() {
     // Set user info
     updateUserInfo();
+    
+    // Set appropriate avatar based on user role
+    setUserAvatar();
     
     // Set active menu item
     const menuItems = document.querySelectorAll('.menu-item');
@@ -185,6 +191,38 @@ function updateUserInfo() {
     if (profileName) profileName.textContent = `${currentUser.firstName} ${currentUser.lastName}`;
     if (profileEmail) profileEmail.textContent = currentUser.email;
     if (profileUniversity) profileUniversity.textContent = getUniversityName(currentUser.university);
+}
+
+// Set user avatar based on role or saved preference
+function setUserAvatar() {
+    if (!currentUser) return;
+    
+    // Get saved avatar preference or use default based on role
+    let avatarIcon = localStorage.getItem('userAvatarIcon');
+    
+    if (!avatarIcon) {
+        // Default avatars based on user role or university
+        const roleAvatars = {
+            'student': 'fas fa-user-graduate',
+            'teacher': 'fas fa-user-tie',
+            'admin': 'fas fa-user-shield',
+            'guest': 'fas fa-user'
+        };
+        
+        avatarIcon = roleAvatars[currentUser.role] || 'fas fa-user-graduate';
+    }
+    
+    // Update navigation avatar
+    const navAvatar = document.querySelector('.user-avatar i');
+    if (navAvatar) {
+        navAvatar.className = avatarIcon;
+    }
+    
+    // Update profile avatar
+    const profileAvatar = document.querySelector('#profileImage i');
+    if (profileAvatar) {
+        profileAvatar.className = avatarIcon;
+    }
 }
 
 // Load user data
@@ -661,7 +699,46 @@ function removeFromFavorites(id) {
 
 // Profile actions
 function changeAvatar() {
-    showNotification('Avatar o\'zgartirish funksiyasi tez orada qo\'shiladi', 'info');
+    const avatarIcons = [
+        'fas fa-user-circle',
+        'fas fa-user-graduate',
+        'fas fa-user-tie',
+        'fas fa-user-astronaut',
+        'fas fa-user-ninja',
+        'fas fa-user-md',
+        'fas fa-user-secret',
+        'fas fa-smile',
+        'fas fa-smile-beam',
+        'fas fa-grin-stars'
+    ];
+    
+    const currentIcon = document.querySelector('#profileImage i');
+    const currentIconClass = currentIcon.className;
+    
+    // Find current icon index
+    let currentIndex = avatarIcons.findIndex(icon => currentIconClass.includes(icon.split(' ')[1]));
+    
+    // Move to next icon (or first if not found)
+    const nextIndex = (currentIndex + 1) % avatarIcons.length;
+    const newIcon = avatarIcons[nextIndex];
+    
+    // Update the icon
+    currentIcon.className = newIcon;
+    
+    // Update navigation avatar too
+    const navAvatar = document.querySelector('.user-avatar i');
+    if (navAvatar) {
+        navAvatar.className = newIcon;
+    }
+    
+    // Save preference
+    localStorage.setItem('userAvatarIcon', newIcon);
+    
+    // Show notification
+    showNotification('Avatar o\'zgartirildi!', 'success');
+    
+    // Add notification
+    addNotification('system', 'Avatar yangilandi', 'Profil rasmingiz o\'zgartirildi');
 }
 
 function resetProfile() {
@@ -860,11 +937,25 @@ function getUniversityName(universityId) {
 
 function formatDate(dateString) {
     const date = new Date(dateString);
-    return date.toLocaleDateString('uz-UZ', {
-        year: 'numeric',
-        month: 'short',
-        day: 'numeric'
-    });
+    
+    // Uzbek month names
+    const months = {
+        0: 'yanvar',
+        1: 'fevral',
+        2: 'mart',
+        3: 'aprel',
+        4: 'may',
+        5: 'iyun',
+        6: 'iyul',
+        7: 'avgust',
+        8: 'sentabr',
+        9: 'oktabr',
+        10: 'noyabr',
+        11: 'dekabr'
+    };
+
+    // Format: "9-sentabr, 2025-yil"
+    return `${date.getDate()}-${months[date.getMonth()]}, ${date.getFullYear()}-yil`;
 }
 
 function showNotification(message, type = 'info') {
@@ -1518,3 +1609,440 @@ function createSampleDocuments() {
 
 // Make function available globally for console access
 window.createSampleDocuments = createSampleDocuments;
+
+// Enhance form elements
+function enhanceFormElements() {
+    // Wrap all enhanced select elements in custom-select container
+    document.querySelectorAll('select.filter-select.enhanced').forEach(select => {
+        if (!select.parentElement.classList.contains('custom-select')) {
+            const wrapper = document.createElement('div');
+            wrapper.className = 'custom-select';
+            select.parentNode.insertBefore(wrapper, select);
+            wrapper.appendChild(select);
+        }
+    });
+
+    // Add password strength indicator
+    const newPasswordInput = document.getElementById('newPassword');
+    if (newPasswordInput) {
+        newPasswordInput.addEventListener('input', function() {
+            const strength = calculatePasswordStrength(this.value);
+            const strengthBar = document.querySelector('.strength-bar');
+            const strengthText = document.querySelector('.strength-text');
+            
+            if (strengthBar && strengthText) {
+                strengthBar.style.setProperty('--strength-width', `${strength.score * 25}%`);
+                strengthBar.style.setProperty('--strength-color', strength.color);
+                strengthText.textContent = strength.message;
+            }
+        });
+    }
+}
+
+// Calculate password strength
+function calculatePasswordStrength(password) {
+    let score = 0;
+    let message = 'Parol kiritilmagan';
+    let color = '#e5e7eb';
+
+    if (password.length > 0) {
+        score++;
+        message = 'Juda zaif';
+        color = '#ef4444';
+    }
+    if (password.length >= 8) {
+        score++;
+        message = 'Zaif';
+        color = '#f59e0b';
+    }
+    if (/[A-Z]/.test(password) && /[a-z]/.test(password)) {
+        score++;
+        message = 'O\'rtacha';
+        color = '#10b981';
+    }
+    if (/[0-9]/.test(password) && /[^A-Za-z0-9]/.test(password)) {
+        score++;
+        message = 'Kuchli';
+        color = '#059669';
+    }
+
+    return { score, message, color };
+}
+
+// Call enhanceFormElements when DOM is loaded
+document.addEventListener('DOMContentLoaded', function() {
+    enhanceFormElements();
+});
+
+// ===== DARK MODE FUNCTIONALITY =====
+
+// Initialize dark mode
+function initializeDarkMode() {
+    const savedTheme = localStorage.getItem('theme');
+    const darkModeIcon = document.getElementById('darkModeIcon');
+    
+    if (savedTheme === 'dark') {
+        enableDarkMode();
+    } else {
+        disableDarkMode();
+    }
+    
+    // Update icon based on current theme
+    updateDarkModeIcon();
+}
+
+// Toggle dark mode
+function toggleDarkMode() {
+    const currentTheme = document.documentElement.getAttribute('data-theme');
+    
+    if (currentTheme === 'dark') {
+        disableDarkMode();
+        localStorage.setItem('theme', 'light');
+    } else {
+        enableDarkMode();
+        localStorage.setItem('theme', 'dark');
+    }
+    
+    updateDarkModeIcon();
+    
+    // Add notification
+    const theme = currentTheme === 'dark' ? 'yorug\'' : 'tungi';
+    addNotification('info', `${theme.charAt(0).toUpperCase() + theme.slice(1)} rejim yoqildi`, 'Rejim muvaffaqiyatli o\'zgartirildi');
+}
+
+// Enable dark mode
+function enableDarkMode() {
+    document.documentElement.setAttribute('data-theme', 'dark');
+    document.body.classList.add('dark-mode');
+}
+
+// Disable dark mode
+function disableDarkMode() {
+    document.documentElement.setAttribute('data-theme', 'light');
+    document.body.classList.remove('dark-mode');
+}
+
+// Update dark mode icon
+function updateDarkModeIcon() {
+    const darkModeIcon = document.getElementById('darkModeIcon');
+    if (!darkModeIcon) return;
+    
+    const currentTheme = document.documentElement.getAttribute('data-theme');
+    
+    if (currentTheme === 'dark') {
+        darkModeIcon.className = 'fas fa-sun';
+        darkModeIcon.parentElement.title = 'Yorug\' rejim';
+    } else {
+        darkModeIcon.className = 'fas fa-moon';
+        darkModeIcon.parentElement.title = 'Tungi rejim';
+    }
+}
+
+// Enhanced functionality for new features
+
+// Clear search functions
+function clearDocumentSearch() {
+    const searchInput = document.getElementById('documentSearch');
+    if (searchInput) {
+        searchInput.value = '';
+        currentFilters.search = '';
+        applyDocumentFilters();
+    }
+}
+
+function clearDownloadsSearch() {
+    const searchInput = document.getElementById('downloadsSearch');
+    if (searchInput) {
+        searchInput.value = '';
+        filterDownloads('');
+    }
+}
+
+function clearFavoritesSearch() {
+    const searchInput = document.getElementById('favoritesSearch');
+    if (searchInput) {
+        searchInput.value = '';
+        loadFavorites();
+    }
+}
+
+// Reset filters
+function resetFilters() {
+    currentFilters = { search: '', subject: '', format: '' };
+    
+    // Reset filter inputs
+    const searchInput = document.getElementById('documentSearch');
+    const subjectFilter = document.getElementById('subjectFilter');
+    const formatFilter = document.getElementById('formatFilter');
+    const sortFilter = document.getElementById('sortFilter');
+    
+    if (searchInput) searchInput.value = '';
+    if (subjectFilter) subjectFilter.value = '';
+    if (formatFilter) formatFilter.value = '';
+    if (sortFilter) sortFilter.value = 'newest';
+    
+    applyDocumentFilters();
+    showNotification('Filterlar tozalandi', 'info');
+}
+
+// Export functions
+function exportDownloads() {
+    const downloadsData = userDownloads.map(download => ({
+        'Hujjat nomi': download.title,
+        'Muallif': download.author,
+        'Fan': getSubjectName(download.subject),
+        'Format': download.format,
+        'Yuklab olingan sana': formatDate(download.downloadDate),
+        'Hajmi': download.size || 'N/A'
+    }));
+    
+    exportToCSV(downloadsData, 'yuklab_olingan_hujjatlar.csv');
+    showNotification('Yuklab olingan ma\'lumotlar eksport qilindi', 'success');
+}
+
+function exportFavorites() {
+    const favoritesData = userFavorites.map(favorite => ({
+        'Hujjat nomi': favorite.title,
+        'Muallif': favorite.author,
+        'Fan': getSubjectName(favorite.subject),
+        'Format': favorite.format,
+        'Qo\'shilgan sana': formatDate(favorite.addedDate)
+    }));
+    
+    exportToCSV(favoritesData, 'sevimli_hujjatlar.csv');
+    showNotification('Sevimli hujjatlar eksport qilindi', 'success');
+}
+
+function exportProfile() {
+    if (!currentUser) return;
+    
+    const profileData = {
+        'Ism': currentUser.firstName,
+        'Familiya': currentUser.lastName,
+        'Email': currentUser.email,
+        'Telefon': currentUser.phone || '',
+        'Universitet': getUniversityName(currentUser.university),
+        'Kurs': currentUser.course || '',
+        'Ro\'yxatdan o\'tgan': formatDate(currentUser.createdAt || '2024-01-01'),
+        'Jami yuklab olingan': userDownloads.length,
+        'Sevimli hujjatlar': userFavorites.length
+    };
+    
+    const csvData = Object.entries(profileData).map(([key, value]) => `${key},${value}`).join('\n');
+    downloadCSV(csvData, 'profil_malumotlari.csv');
+    showNotification('Profil ma\'lumotlari yuklab olindi', 'success');
+}
+
+// CSV export utility
+function exportToCSV(data, filename) {
+    if (data.length === 0) {
+        showNotification('Eksport qilish uchun ma\'lumotlar yo\'q', 'warning');
+        return;
+    }
+    
+    const headers = Object.keys(data[0]);
+    const csvContent = [
+        headers.join(','),
+        ...data.map(row => headers.map(header => `"${row[header] || ''}"`).join(','))
+    ].join('\n');
+    
+    downloadCSV(csvContent, filename);
+}
+
+function downloadCSV(csvContent, filename) {
+    const blob = new Blob(['\uFEFF' + csvContent], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    
+    if (link.download !== undefined) {
+        const url = URL.createObjectURL(blob);
+        link.setAttribute('href', url);
+        link.setAttribute('download', filename);
+        link.style.visibility = 'hidden';
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        
+        setTimeout(() => URL.revokeObjectURL(url), 1000);
+    }
+}
+
+// Favorites management
+function clearAllFavorites() {
+    if (userFavorites.length === 0) {
+        showNotification('Sevimli hujjatlar yo\'q', 'info');
+        return;
+    }
+    
+    if (confirm(`${userFavorites.length} ta sevimli hujjatni o\'chirishni xohlaysizmi?`)) {
+        userFavorites = [];
+        localStorage.setItem('userFavorites', JSON.stringify(userFavorites));
+        loadFavorites();
+        updateStatistics();
+        showNotification('Barcha sevimli hujjatlar o\'chirildi', 'success');
+        addNotification('system', 'Sevimlilar tozalandi', 'Barcha sevimli hujjatlar o\'chirildi');
+    }
+}
+
+// Settings functions
+function resetAllSettings() {
+    if (confirm('Barcha sozlamalarni standart holatga qaytarishni xohlaysizmi?')) {
+        // Reset theme
+        localStorage.removeItem('theme');
+        
+        // Reset notifications
+        const emailNotifications = document.getElementById('emailNotifications');
+        const newDocuments = document.getElementById('newDocuments');
+        const weeklyDigest = document.getElementById('weeklyDigest');
+        
+        if (emailNotifications) emailNotifications.checked = true;
+        if (newDocuments) newDocuments.checked = true;
+        if (weeklyDigest) weeklyDigest.checked = false;
+        
+        showNotification('Sozlamalar standart holatga qaytarildi', 'success');
+        addNotification('system', 'Sozlamalar qaytarildi', 'Barcha sozlamalar standart qiymatlarga o\'rnatildi');
+    }
+}
+
+function clearUserData() {
+    if (confirm('Barcha ma\'lumotlaringizni (yuklab olinganlar, sevimlilar) o\'chirishni xohlaysizmi? Bu amal qaytarib bo\'lmaydi.')) {
+        const confirmText = prompt('Tasdiqlash uchun "DELETE" deb yozing:');
+        if (confirmText === 'DELETE') {
+            // Clear all user data
+            userDownloads = [];
+            userFavorites = [];
+            userNotifications = [];
+            
+            localStorage.removeItem('userDownloads');
+            localStorage.removeItem('userFavorites');
+            localStorage.removeItem('userNotifications');
+            localStorage.removeItem('userAvatarIcon');
+            
+            // Reload sections
+            loadUserData();
+            loadNotifications();
+            updateNotificationBadge();
+            setUserAvatar();
+            
+            showNotification('Barcha ma\'lumotlar o\'chirildi', 'success');
+            addNotification('system', 'Ma\'lumotlar tozalandi', 'Barcha foydalanuvchi ma\'lumotlari o\'chirildi');
+        } else {
+            showNotification('Tasdiq matnini noto\'g\'ri kiritdingiz', 'error');
+        }
+    }
+}
+
+// Update statistics with total documents
+function updateStatistics() {
+    const totalDownloads = document.getElementById('totalDownloads');
+    const totalFavorites = document.getElementById('totalFavorites');
+    const recentActivity = document.getElementById('recentActivity');
+    const totalDocuments = document.getElementById('totalDocuments');
+    const totalDownloadsStat = document.getElementById('totalDownloadsStat');
+    const totalFavoritesStat = document.getElementById('totalFavoritesStat');
+    const joinDate = document.getElementById('joinDate');
+    const lastActivity = document.getElementById('lastActivity');
+    
+    // Update counts
+    const downloadsCount = userDownloads.length;
+    const favoritesCount = userFavorites.length;
+    const documentsCount = documentsData.length;
+    
+    if (totalDownloads) totalDownloads.textContent = downloadsCount;
+    if (totalFavorites) totalFavorites.textContent = favoritesCount;
+    if (recentActivity) recentActivity.textContent = Math.min(downloadsCount, 7); // Active days this week
+    if (totalDocuments) totalDocuments.textContent = documentsCount;
+    if (totalDownloadsStat) totalDownloadsStat.textContent = downloadsCount;
+    if (totalFavoritesStat) totalFavoritesStat.textContent = favoritesCount;
+    
+    // Update other stats
+    if (joinDate) joinDate.textContent = formatDate(currentUser?.createdAt || '2024-01-01');
+    if (lastActivity) lastActivity.textContent = downloadsCount > 0 ? formatDate(userDownloads[0].downloadDate) : 'Hozircha yo\'q';
+    
+    // Update section-specific counts
+    const documentsCountEl = document.getElementById('documentsCount');
+    const downloadsCountEl = document.getElementById('downloadsCount');
+    const favoritesCountEl = document.getElementById('favoritesCount');
+    
+    if (documentsCountEl) documentsCountEl.textContent = documentsCount;
+    if (downloadsCountEl) downloadsCountEl.textContent = downloadsCount;
+    if (favoritesCountEl) favoritesCountEl.textContent = favoritesCount;
+    
+    // Update summary stats
+    updateDownloadsSummary();
+}
+
+// Update downloads summary
+function updateDownloadsSummary() {
+    const downloadsThisMonth = document.getElementById('downloadsThisMonth');
+    const totalSize = document.getElementById('totalSize');
+    const favoritesFromDownloads = document.getElementById('favoritesFromDownloads');
+    
+    if (downloadsThisMonth) {
+        const thisMonth = new Date().getMonth();
+        const thisYear = new Date().getFullYear();
+        const monthlyDownloads = userDownloads.filter(download => {
+            const downloadDate = new Date(download.downloadDate);
+            return downloadDate.getMonth() === thisMonth && downloadDate.getFullYear() === thisYear;
+        });
+        downloadsThisMonth.textContent = monthlyDownloads.length;
+    }
+    
+    if (totalSize) {
+        // Calculate approximate total size
+        const estimatedSize = userDownloads.length * 2.5; // Assume average 2.5MB per file
+        totalSize.textContent = `${estimatedSize.toFixed(1)} MB`;
+    }
+    
+    if (favoritesFromDownloads) {
+        const favoritedFromDownloads = userDownloads.filter(download => 
+            userFavorites.some(fav => fav.id === download.docId)
+        );
+        favoritesFromDownloads.textContent = favoritedFromDownloads.length;
+    }
+}
+
+// Mobile menu functionality
+function setupMobileMenu() {
+    // Show mobile menu button on mobile devices
+    if (window.innerWidth <= 768) {
+        const mobileBtn = document.querySelector('.mobile-menu-btn');
+        if (mobileBtn) mobileBtn.style.display = 'block';
+    }
+    
+    // Handle window resize
+    window.addEventListener('resize', function() {
+        const mobileBtn = document.querySelector('.mobile-menu-btn');
+        const sidebar = document.getElementById('mobileSidebar');
+        
+        if (window.innerWidth <= 768) {
+            if (mobileBtn) mobileBtn.style.display = 'block';
+        } else {
+            if (mobileBtn) mobileBtn.style.display = 'none';
+            if (sidebar) sidebar.classList.remove('mobile-open');
+        }
+    });
+}
+
+function toggleMobileSidebar() {
+    const sidebar = document.getElementById('mobileSidebar');
+    if (sidebar) {
+        sidebar.classList.toggle('mobile-open');
+    }
+}
+
+// Close mobile sidebar when clicking outside
+document.addEventListener('click', function(event) {
+    const sidebar = document.getElementById('mobileSidebar');
+    const mobileBtn = document.querySelector('.mobile-menu-btn');
+    
+    if (sidebar && sidebar.classList.contains('mobile-open')) {
+        if (!sidebar.contains(event.target) && !mobileBtn.contains(event.target)) {
+            sidebar.classList.remove('mobile-open');
+        }
+    }
+});
+
+// Initialize mobile menu when page loads
+window.addEventListener('load', function() {
+    setupMobileMenu();
+});
