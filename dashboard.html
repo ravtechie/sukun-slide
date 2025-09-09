@@ -1,0 +1,417 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Foydalanuvchi Dashboard - Sukun Slide</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="dashboard.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <!-- User Navigation -->
+    <nav class="user-navbar">
+        <div class="nav-container">
+            <div class="nav-logo">
+                <img src="assets/sukun_logo.png" alt="Sukun Slide Logo" class="logo-img">
+                <span>Sukun Slide</span>
+            </div>
+            <div class="nav-user">
+                <div class="user-info">
+                    <img src="https://via.placeholder.com/40" alt="User" class="user-avatar">
+                    <div class="user-details">
+                        <span class="user-name" id="userName">Foydalanuvchi</span>
+                        <span class="user-role">Talaba</span>
+                    </div>
+                </div>
+                <div class="nav-actions">
+                    <button class="nav-btn" onclick="toggleNotifications()">
+                        <i class="fas fa-bell"></i>
+                        <span class="notification-badge">2</span>
+                    </button>
+                    <button class="nav-btn" onclick="logout()">
+                        <i class="fas fa-sign-out-alt"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <div class="dashboard-container">
+        <!-- Sidebar -->
+        <aside class="dashboard-sidebar">
+            <div class="sidebar-menu">
+                <a href="#overview" class="menu-item active" data-section="overview">
+                    <i class="fas fa-tachometer-alt"></i>
+                    <span>Umumiy ko'rinish</span>
+                </a>
+                <a href="#documents" class="menu-item" data-section="documents">
+                    <i class="fas fa-file-alt"></i>
+                    <span>Mening hujjatlarim</span>
+                </a>
+                <a href="#downloads" class="menu-item" data-section="downloads">
+                    <i class="fas fa-download"></i>
+                    <span>Yuklab olingan</span>
+                </a>
+                <a href="#favorites" class="menu-item" data-section="favorites">
+                    <i class="fas fa-heart"></i>
+                    <span>Sevimlilar</span>
+                </a>
+                <a href="#profile" class="menu-item" data-section="profile">
+                    <i class="fas fa-user"></i>
+                    <span>Profil</span>
+                </a>
+                <a href="#settings" class="menu-item" data-section="settings">
+                    <i class="fas fa-cog"></i>
+                    <span>Sozlamalar</span>
+                </a>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="dashboard-main">
+            <!-- Overview Section -->
+            <section id="overview" class="dashboard-section active">
+                <div class="section-header">
+                    <h1>Xush kelibsiz!</h1>
+                    <p>O'quv materiallarini oson toping va yuklab oling</p>
+                </div>
+
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-icon">
+                            <i class="fas fa-download"></i>
+                        </div>
+                        <div class="stat-content">
+                            <h3 id="totalDownloads">0</h3>
+                            <p>Yuklab olingan</p>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon">
+                            <i class="fas fa-heart"></i>
+                        </div>
+                        <div class="stat-content">
+                            <h3 id="totalFavorites">0</h3>
+                            <p>Sevimlilar</p>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon">
+                            <i class="fas fa-clock"></i>
+                        </div>
+                        <div class="stat-content">
+                            <h3 id="recentActivity">0</h3>
+                            <p>Oxirgi faoliyat</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="dashboard-grid">
+                    <div class="dashboard-card">
+                        <div class="card-header">
+                            <h3>Oxirgi yuklab olingan</h3>
+                            <a href="#downloads" class="btn btn-sm">Barchasini ko'rish</a>
+                        </div>
+                        <div class="recent-downloads" id="recentDownloads">
+                            <!-- Recent downloads will be populated by JavaScript -->
+                        </div>
+                    </div>
+
+                    <div class="dashboard-card">
+                        <div class="card-header">
+                            <h3>Tavsiya etilgan</h3>
+                            <a href="index.html#subjects" class="btn btn-sm">Barcha fanlar</a>
+                        </div>
+                        <div class="recommended-documents" id="recommendedDocuments">
+                            <!-- Recommended documents will be populated by JavaScript -->
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Documents Section -->
+            <section id="documents" class="dashboard-section">
+                <div class="section-header">
+                    <h1>Barcha hujjatlar</h1>
+                    <div class="header-actions">
+                        <div class="search-box">
+                            <i class="fas fa-search"></i>
+                            <input type="text" id="documentSearch" placeholder="Hujjatlarni qidiring...">
+                        </div>
+                        <select class="filter-select" id="subjectFilter">
+                            <option value="">Barcha fanlar</option>
+                            <option value="mathematics">Matematika</option>
+                            <option value="physics">Fizika</option>
+                            <option value="chemistry">Kimyo</option>
+                            <option value="biology">Biologiya</option>
+                            <option value="history">Tarix</option>
+                            <option value="geography">Geografiya</option>
+                            <option value="literature">Adabiyot</option>
+                            <option value="english">Ingliz tili</option>
+                        </select>
+                        <select class="filter-select" id="formatFilter">
+                            <option value="">Barcha formatlar</option>
+                            <option value="ppt">PowerPoint</option>
+                            <option value="pdf">PDF</option>
+                            <option value="doc">Word</option>
+                            <option value="xlsx">Excel</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="documents-grid" id="allDocumentsGrid">
+                    <!-- All available documents will be populated by JavaScript -->
+                </div>
+                
+                <div class="load-more-container">
+                    <button class="btn btn-outline" id="loadMoreBtn" onclick="loadMoreDocuments()">
+                        <i class="fas fa-plus"></i> Ko'proq yuklash
+                    </button>
+                </div>
+            </section>
+
+            <!-- Downloads Section -->
+            <section id="downloads" class="dashboard-section">
+                <div class="section-header">
+                    <h1>Yuklab olingan hujjatlar</h1>
+                    <div class="header-actions">
+                        <div class="search-box">
+                            <i class="fas fa-search"></i>
+                            <input type="text" placeholder="Yuklab olingan hujjatlarni qidiring...">
+                        </div>
+                        <select class="filter-select">
+                            <option value="">Barcha vaqt</option>
+                            <option value="today">Bugun</option>
+                            <option value="week">Bu hafta</option>
+                            <option value="month">Bu oy</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="downloads-list" id="downloadsList">
+                    <!-- Downloads will be populated by JavaScript -->
+                </div>
+            </section>
+
+            <!-- Favorites Section -->
+            <section id="favorites" class="dashboard-section">
+                <div class="section-header">
+                    <h1>Sevimli hujjatlar</h1>
+                    <p>Sevimli qilingan o'quv materiallari</p>
+                </div>
+
+                <div class="favorites-grid" id="favoritesGrid">
+                    <!-- Favorites will be populated by JavaScript -->
+                </div>
+            </section>
+
+            <!-- Profile Section -->
+            <section id="profile" class="dashboard-section">
+                <div class="section-header">
+                    <h1>Profil ma'lumotlari</h1>
+                    <p>Shaxsiy ma'lumotlaringizni boshqaring</p>
+                </div>
+
+                <div class="profile-container">
+                    <div class="profile-card">
+                        <div class="profile-header">
+                            <div class="profile-avatar">
+                                <img src="https://via.placeholder.com/120" alt="Profile" id="profileImage">
+                                <button class="avatar-edit" onclick="changeAvatar()">
+                                    <i class="fas fa-camera"></i>
+                                </button>
+                            </div>
+                            <div class="profile-info">
+                                <h2 id="profileName">Foydalanuvchi Ismi</h2>
+                                <p id="profileEmail">user@example.com</p>
+                                <p id="profileUniversity">Universitet nomi</p>
+                            </div>
+                        </div>
+
+                        <form class="profile-form" id="profileForm">
+                            <div class="form-grid">
+                                <div class="form-group">
+                                    <label for="firstName">Ism</label>
+                                    <input type="text" id="firstName" name="firstName" required>
+                                </div>
+                                <div class="form-group">
+                                    <label for="lastName">Familiya</label>
+                                    <input type="text" id="lastName" name="lastName" required>
+                                </div>
+                                <div class="form-group">
+                                    <label for="email">Email</label>
+                                    <input type="email" id="email" name="email" required>
+                                </div>
+                                <div class="form-group">
+                                    <label for="phone">Telefon</label>
+                                    <input type="tel" id="phone" name="phone">
+                                </div>
+                                <div class="form-group">
+                                    <label for="university">Universitet</label>
+                                    <select id="university" name="university" required>
+                                        <option value="">Universitet tanlang</option>
+                                        <option value="tashkent-university">Toshkent Davlat Universiteti</option>
+                                        <option value="tashkent-tech">Toshkent Axborot Texnologiyalari Universiteti</option>
+                                        <option value="samarkand-university">Samarqand Davlat Universiteti</option>
+                                        <option value="other">Boshqa</option>
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label for="course">Kurs</label>
+                                    <select id="course" name="course">
+                                        <option value="">Kurs tanlang</option>
+                                        <option value="1">1-kurs</option>
+                                        <option value="2">2-kurs</option>
+                                        <option value="3">3-kurs</option>
+                                        <option value="4">4-kurs</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="form-actions">
+                                <button type="button" class="btn btn-secondary" onclick="resetProfile()">
+                                    <i class="fas fa-undo"></i>
+                                    Qaytarish
+                                </button>
+                                <button type="submit" class="btn btn-primary">
+                                    <i class="fas fa-save"></i>
+                                    Saqlash
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+
+                    <div class="profile-stats">
+                        <div class="stats-card">
+                            <h3>Statistika</h3>
+                            <div class="stat-item">
+                                <span>Jami yuklab olingan</span>
+                                <strong id="totalDownloadsStat">0</strong>
+                            </div>
+                            <div class="stat-item">
+                                <span>Sevimli hujjatlar</span>
+                                <strong id="totalFavoritesStat">0</strong>
+                            </div>
+                            <div class="stat-item">
+                                <span>Ro'yxatdan o'tgan sana</span>
+                                <strong id="joinDate">-</strong>
+                            </div>
+                            <div class="stat-item">
+                                <span>Oxirgi faoliyat</span>
+                                <strong id="lastActivity">-</strong>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Settings Section -->
+            <section id="settings" class="dashboard-section">
+                <div class="section-header">
+                    <h1>Sozlamalar</h1>
+                    <p>Hisobingiz va platforma sozlamalarini boshqaring</p>
+                </div>
+
+                <div class="settings-grid">
+                    <div class="settings-card">
+                        <h3>Xavfsizlik</h3>
+                        <form class="settings-form" id="passwordForm">
+                            <div class="form-group">
+                                <label for="currentPassword">Joriy parol</label>
+                                <input type="password" id="currentPassword" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="newPassword">Yangi parol</label>
+                                <input type="password" id="newPassword" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="confirmNewPassword">Yangi parolni tasdiqlang</label>
+                                <input type="password" id="confirmNewPassword" required>
+                            </div>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-key"></i>
+                                Parolni o'zgartirish
+                            </button>
+                        </form>
+                    </div>
+
+                    <div class="settings-card">
+                        <h3>Bildirishnomalar</h3>
+                        <form class="settings-form" id="notificationsForm">
+                            <div class="form-group">
+                                <label class="checkbox-label">
+                                    <input type="checkbox" id="emailNotifications" checked>
+                                    <span class="checkmark"></span>
+                                    Email bildirishnomalari
+                                </label>
+                            </div>
+                            <div class="form-group">
+                                <label class="checkbox-label">
+                                    <input type="checkbox" id="newDocuments" checked>
+                                    <span class="checkmark"></span>
+                                    Yangi hujjatlar haqida xabar
+                                </label>
+                            </div>
+                            <div class="form-group">
+                                <label class="checkbox-label">
+                                    <input type="checkbox" id="weeklyDigest">
+                                    <span class="checkmark"></span>
+                                    Haftalik xulosa
+                                </label>
+                            </div>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-bell"></i>
+                                Sozlamalarni saqlash
+                            </button>
+                        </form>
+                    </div>
+
+                    <div class="settings-card">
+                        <h3>Hisobni o'chirish</h3>
+                        <p>Hisobingizni butunlay o'chirish mumkin. Bu amal qaytarib bo'lmaydi.</p>
+                        <button type="button" class="btn btn-danger" onclick="deleteAccount()">
+                            <i class="fas fa-trash"></i>
+                            Hisobni o'chirish
+                        </button>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <!-- Notifications Panel -->
+    <div class="notifications-panel" id="notificationsPanel">
+        <div class="panel-header">
+            <h3>Bildirishnomalar</h3>
+            <button class="close-btn" onclick="toggleNotifications()">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        <div class="notifications-list">
+            <div class="notification-item">
+                <div class="notification-icon">
+                    <i class="fas fa-file-alt"></i>
+                </div>
+                <div class="notification-content">
+                    <p>Yangi hujjat qo'shildi</p>
+                    <span>Matematika - Trigonometriya</span>
+                </div>
+                <div class="notification-time">2 soat oldin</div>
+            </div>
+            <div class="notification-item">
+                <div class="notification-icon">
+                    <i class="fas fa-download"></i>
+                </div>
+                <div class="notification-content">
+                    <p>Hujjat muvaffaqiyatli yuklab olindi</p>
+                    <span>Fizika - Mexanika.pptx</span>
+                </div>
+                <div class="notification-time">1 kun oldin</div>
+            </div>
+        </div>
+    </div>
+
+    <script src="dashboard.js"></script>
+</body>
+</html>

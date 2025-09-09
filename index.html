@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sukun Slide - O'quv Materiallari</title>
+    <link rel="stylesheet" href="styles.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="nav-logo">
+                <img src="assets/sukun_logo.png" alt="Sukun Slide Logo" class="logo-img">
+                <span>Sukun Slide</span>
+            </div>
+            <ul class="nav-menu">
+                <li class="nav-item">
+                    <a href="#home" class="nav-link">Bosh sahifa</a>
+                </li>
+                <li class="nav-item">
+                    <a href="#subjects" class="nav-link">Fanlar</a>
+                </li>
+                <li class="nav-item">
+                    <a href="browse.html" class="nav-link">Fayllar</a>
+                </li>
+                <li class="nav-item">
+                    <a href="#about" class="nav-link">Biz haqimizda</a>
+                </li>
+                <li class="nav-item">
+                    <a href="#contact" class="nav-link">Aloqa</a>
+                </li>
+                <li class="nav-item">
+                    <a href="login.html" class="nav-link">Kirish</a>
+                </li>
+                <li class="nav-item">
+                    <a href="register.html" class="nav-link btn btn-primary" style="padding: 8px 16px; margin-left: 10px;">Ro'yxatdan o'tish</a>
+                </li>
+            </ul>
+            <div class="nav-toggle">
+                <span class="bar"></span>
+                <span class="bar"></span>
+                <span class="bar"></span>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section id="home" class="hero">
+        <div class="hero-container">
+            <div class="hero-content">
+                <h1 class="hero-title">
+                    O'quv Materiallari
+                    <span class="highlight">Kutubxonasi</span>
+                </h1>
+                <p class="hero-description">
+                    O'zbekiston talabalari uchun turli fanlar bo'yicha taqdimotlar, 
+                    hujjatlar va o'quv materiallarini bepul yuklab oling
+                </p>
+                <div class="hero-buttons">
+                    <a href="#subjects" class="btn btn-primary">
+                        <i class="fas fa-book-open"></i>
+                        Fanlarni Ko'rish
+                    </a>
+                    <a href="#search" class="btn btn-secondary">
+                        <i class="fas fa-search"></i>
+                        Qidirish
+                    </a>
+                </div>
+            </div>
+            <div class="hero-image">
+                <div class="floating-cards">
+                    <div class="card card-1">
+                        <i class="fas fa-file-powerpoint"></i>
+                        <span>PPT</span>
+                    </div>
+                    <div class="card card-2">
+                        <i class="fas fa-file-pdf"></i>
+                        <span>PDF</span>
+                    </div>
+                    <div class="card card-3">
+                        <i class="fas fa-file-word"></i>
+                        <span>DOC</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Search Section -->
+    <section id="search" class="search-section">
+        <div class="container">
+            <div class="search-container">
+                <div class="search-box">
+                    <i class="fas fa-search"></i>
+                    <input type="text" id="searchInput" placeholder="Materiallarni qidiring...">
+                    <button class="search-btn">Qidirish</button>
+                </div>
+                <div class="search-filters">
+                    <select id="subjectFilter">
+                        <option value="">Barcha fanlar</option>
+                        <option value="mathematics">Matematika</option>
+                        <option value="physics">Fizika</option>
+                        <option value="chemistry">Kimyo</option>
+                        <option value="biology">Biologiya</option>
+                        <option value="history">Tarix</option>
+                        <option value="geography">Geografiya</option>
+                        <option value="literature">Adabiyot</option>
+                        <option value="english">Ingliz tili</option>
+                    </select>
+                    <select id="formatFilter">
+                        <option value="">Barcha formatlar</option>
+                        <option value="ppt">PowerPoint</option>
+                        <option value="pdf">PDF</option>
+                        <option value="doc">Word</option>
+                        <option value="xlsx">Excel</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Subjects Section -->
+    <section id="subjects" class="subjects-section">
+        <div class="container">
+            <div class="section-header">
+                <h2>Fanlar</h2>
+                <p>Turli fanlar bo'yicha o'quv materiallarini tanlang</p>
+            </div>
+            <div class="subjects-grid" id="subjectsGrid">
+                <!-- Subjects will be populated by JavaScript -->
+            </div>
+        </div>
+    </section>
+
+    <!-- Documents Section -->
+    <section class="documents-section">
+        <div class="container">
+            <div class="section-header">
+                <div class="header-content">
+                    <div>
+                        <h2>Oxirgi Materiallar</h2>
+                        <p>Eng so'nggi qo'shilgan o'quv materiallari</p>
+                    </div>
+                    <button class="btn btn-sm btn-outline" onclick="refreshDocuments()" title="Hujjatlarni yangilash">
+                        <i class="fas fa-sync-alt"></i>
+                        Yangilash
+                    </button>
+                </div>
+            </div>
+            <div class="documents-grid" id="documentsGrid">
+                <!-- Documents will be populated by JavaScript -->
+            </div>
+            <div class="load-more">
+                <button class="btn btn-outline" id="loadMoreBtn">
+                    <i class="fas fa-plus"></i>
+                    Ko'proq Ko'rish
+                </button>
+            </div>
+        </div>
+    </section>
+
+    <!-- About Section -->
+    <section id="about" class="about-section">
+        <div class="container">
+            <div class="about-content">
+                <div class="about-text">
+                    <h2>Biz Haqimizda</h2>
+                    <p>
+                        Sukun Slide - bu O'zbekiston talabalari uchun maxsus yaratilgan 
+                        o'quv materiallari platformasi. Bizning maqsadimiz - ta'lim jarayonini 
+                        osonlashtirish va har bir talabaga sifatli o'quv materiallarini 
+                        taqdim etish.
+                    </p>
+                    <div class="stats">
+                        <div class="stat">
+                            <h3>500+</h3>
+                            <p>Materiallar</p>
+                        </div>
+                        <div class="stat">
+                            <h3>15+</h3>
+                            <p>Fanlar</p>
+                        </div>
+                        <div class="stat">
+                            <h3>1000+</h3>
+                            <p>Talabalar</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="about-image">
+                    <div class="image-placeholder">
+                        <i class="fas fa-users"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Contact Section -->
+    <section id="contact" class="contact-section">
+        <div class="container">
+            <div class="section-header">
+                <h2>Aloqa</h2>
+                <p>Savollar yoki takliflar uchun biz bilan bog'laning</p>
+            </div>
+            <div class="contact-content">
+                <div class="contact-info">
+                    <div class="contact-item">
+                        <i class="fas fa-envelope"></i>
+                        <div>
+                            <h4>Email</h4>
+                            <p>info@ravshantech@gmail.com</p>
+                        </div>
+                    </div>
+                    <div class="contact-item">
+                        <i class="fas fa-phone"></i>
+                        <div>
+                            <h4>Telefon</h4>
+                            <p>+82 10 8096 6664</p>
+                        </div>
+                    </div>
+                    <div class="contact-item">
+                        <i class="fas fa-map-marker-alt"></i>
+                        <div>
+                            <h4>Manzil</h4>
+                            <p>Chonju, Koreya Respublikasi</p>
+                        </div>
+                    </div>
+                </div>
+                <form class="contact-form">
+                    <div class="form-group">
+                        <input type="text" placeholder="Ismingiz" required>
+                    </div>
+                    <div class="form-group">
+                        <input type="email" placeholder="Email" required>
+                    </div>
+                    <div class="form-group">
+                        <textarea placeholder="Xabaringiz" rows="5" required></textarea>
+                    </div>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-paper-plane"></i>
+                        Yuborish
+                    </button>
+                </form>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <div class="footer-logo">
+                        <img src="assets/sukun_logo.png" alt="Sukun Slide Logo" class="logo-img">
+                        <span>Sukun Slide</span>
+                    </div>
+                    <p>O'zbekiston talabalari uchun o'quv materiallari platformasi</p>
+                </div>
+                <div class="footer-section">
+                    <h4>Tezkor Havolalar</h4>
+                    <ul>
+                        <li><a href="#home">Bosh sahifa</a></li>
+                        <li><a href="#subjects">Fanlar</a></li>
+                        <li><a href="#about">Haqida</a></li>
+                        <li><a href="#contact">Aloqa</a></li>
+                    </ul>
+                </div>
+                <div class="footer-section">
+                    <h4>Ijtimoiy Tarmoqlar</h4>
+                    <div class="social-links">
+                        <a href="#"><i class="fab fa-telegram"></i></a>
+                        <a href="#"><i class="fab fa-instagram"></i></a>
+                        <a href="#"><i class="fab fa-facebook"></i></a>
+                        <a href="#"><i class="fab fa-youtube"></i></a>
+                    </div>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2025 Sukun Slide. Barcha huquqlar himoyalangan.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script src="script.js"></script>
+</body>
+</html>

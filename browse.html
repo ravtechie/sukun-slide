@@ -1,0 +1,480 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fayllarni Ko'rish - Sukun Slide</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="auth.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .browse-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+            min-height: 100vh;
+            padding-top: 90px; /* Account for fixed navbar */
+        }
+        
+        .browse-header {
+            text-align: center;
+            margin-bottom: 3rem;
+            padding: 3rem 2rem;
+            background: var(--gradient-primary);
+            color: white;
+            border-radius: 24px;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .browse-header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 1000"><defs><radialGradient id="a" cx="50%" cy="50%"><stop offset="0%" stop-color="%23ffffff" stop-opacity="0.1"/><stop offset="100%" stop-color="%23ffffff" stop-opacity="0"/></radialGradient></defs><circle cx="200" cy="200" r="100" fill="url(%23a)"/><circle cx="800" cy="300" r="150" fill="url(%23a)"/></svg>');
+            opacity: 0.3;
+        }
+        
+        .browse-header h1, .browse-header p {
+            position: relative;
+            z-index: 1;
+        }
+        
+        .browse-nav {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 2rem;
+            padding: 1rem 0;
+            border-bottom: 1px solid var(--border-color);
+        }
+        
+        .breadcrumb {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            color: var(--text-secondary);
+            font-weight: 500;
+        }
+        
+        .breadcrumb a {
+            color: var(--primary-color);
+            text-decoration: none;
+            transition: color 0.3s ease;
+        }
+        
+        .breadcrumb a:hover {
+            color: var(--primary-dark);
+        }
+        
+        .auth-actions {
+            display: flex;
+            gap: 1rem;
+        }
+        
+        .search-and-filters {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 2rem;
+            flex-wrap: wrap;
+        }
+        
+        .search-box {
+            flex: 1;
+            min-width: 300px;
+        }
+        
+        .search-box input {
+            width: 100%;
+            padding: 12px 16px;
+            border: 2px solid var(--border-color);
+            border-radius: 12px;
+            font-size: 1rem;
+            transition: border-color 0.3s ease, box-shadow 0.3s ease;
+            box-shadow: var(--shadow-sm);
+        }
+        
+        .search-box input:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: var(--shadow-md);
+        }
+        
+        .filters {
+            display: flex;
+            gap: 1rem;
+        }
+        
+        .filters select {
+            padding: 12px 16px;
+            border: 2px solid var(--border-color);
+            border-radius: 12px;
+            background: white;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: border-color 0.3s ease, box-shadow 0.3s ease;
+            box-shadow: var(--shadow-sm);
+        }
+        
+        .filters select:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: var(--shadow-md);
+        }
+        
+        .files-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 3rem;
+        }
+        
+        .file-card {
+            background: var(--bg-primary);
+            border-radius: 16px;
+            box-shadow: var(--shadow-md);
+            overflow: hidden;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            border: 1px solid var(--border-color);
+        }
+        
+        .file-card:hover {
+            transform: translateY(-4px);
+            box-shadow: var(--shadow-xl);
+        }
+        
+        .file-card-header {
+            padding: 1.5rem;
+            background: var(--bg-secondary);
+            border-bottom: 1px solid var(--border-color);
+        }
+        
+        .file-format {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.5rem 1rem;
+            background: var(--primary-color);
+            color: white;
+            border-radius: 20px;
+            font-size: 0.875rem;
+            font-weight: 600;
+            box-shadow: var(--shadow-sm);
+        }
+        
+        .file-card-content {
+            padding: 1.5rem;
+        }
+        
+        .file-title {
+            font-size: 1.125rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 0.5rem;
+            line-height: 1.4;
+        }
+        
+        .file-subject {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            color: var(--text-secondary);
+            font-size: 0.875rem;
+            margin-bottom: 1rem;
+            font-weight: 500;
+        }
+        
+        .file-description {
+            color: var(--text-secondary);
+            font-size: 0.875rem;
+            line-height: 1.5;
+            margin-bottom: 1rem;
+        }
+        
+        .file-meta {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 0.5rem;
+            font-size: 0.8rem;
+            color: var(--text-light);
+        }
+        
+        .file-meta span {
+            display: flex;
+            align-items: center;
+            gap: 0.25rem;
+        }
+        
+        .file-actions {
+            padding: 1rem 1.5rem;
+            background: var(--bg-secondary);
+            border-top: 1px solid var(--border-color);
+            display: flex;
+            gap: 0.5rem;
+            justify-content: space-between;
+        }
+        
+        .login-prompt {
+            background: linear-gradient(135deg, #fef3c7 0%, #fed7aa 100%);
+            border: 2px solid var(--secondary-color);
+            border-radius: 16px;
+            padding: 2rem;
+            margin: 2rem 0;
+            text-align: center;
+            box-shadow: var(--shadow-md);
+        }
+        
+        .login-prompt h4 {
+            color: #92400e;
+            margin-bottom: 0.5rem;
+            font-size: 1.25rem;
+            font-weight: 600;
+        }
+        
+        .login-prompt p {
+            color: #b45309;
+            margin-bottom: 1.5rem;
+            font-size: 1rem;
+        }
+        
+        .stats-bar {
+            background: var(--bg-primary);
+            border-radius: 20px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            box-shadow: var(--shadow-lg);
+            border: 1px solid var(--border-color);
+            display: flex;
+            justify-content: space-around;
+            text-align: center;
+        }
+        
+        .stat-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        
+        .stat-number {
+            font-size: 2.5rem;
+            font-weight: 700;
+            background: var(--gradient-primary);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 0.25rem;
+        }
+        
+        .stat-label {
+            color: var(--text-secondary);
+            font-size: 0.875rem;
+            font-weight: 500;
+        }
+        
+        .empty-state {
+            text-align: center;
+            padding: 4rem 2rem;
+            color: var(--text-secondary);
+            background: var(--bg-secondary);
+            border-radius: 16px;
+            border: 2px dashed var(--border-color);
+        }
+        
+        .empty-state i {
+            font-size: 4rem;
+            margin-bottom: 1rem;
+            color: var(--text-light);
+        }
+        
+        .empty-state h3 {
+            color: var(--text-primary);
+            margin-bottom: 0.5rem;
+        }
+        
+        /* Button styles matching the main theme */
+        .btn-sm {
+            padding: 8px 16px;
+            font-size: 0.875rem;
+        }
+        
+        .btn-xs {
+            padding: 6px 12px;
+            font-size: 0.75rem;
+        }
+        
+        @media (max-width: 768px) {
+            .browse-container {
+                padding: 1rem;
+            }
+            
+            .browse-header {
+                padding: 2rem 1rem;
+                margin-bottom: 2rem;
+            }
+            
+            .browse-nav {
+                flex-direction: column;
+                gap: 1rem;
+                align-items: flex-start;
+            }
+            
+            .search-and-filters {
+                flex-direction: column;
+            }
+            
+            .search-box {
+                min-width: auto;
+            }
+            
+            .filters {
+                flex-direction: column;
+            }
+            
+            .files-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .stats-bar {
+                flex-direction: column;
+                gap: 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="nav-logo">
+                <img src="assets/sukun_logo.png" alt="Sukun Slide Logo" class="logo-img">
+                <span>Sukun Slide</span>
+            </div>
+            <ul class="nav-menu">
+                <li class="nav-item">
+                    <a href="index.html" class="nav-link">Bosh sahifa</a>
+                </li>
+                <li class="nav-item">
+                    <a href="index.html#subjects" class="nav-link">Fanlar</a>
+                </li>
+                <li class="nav-item">
+                    <a href="browse.html" class="nav-link" style="color: var(--primary-color); font-weight: 600;">Fayllar</a>
+                </li>
+                <li class="nav-item">
+                    <a href="index.html#about" class="nav-link">Biz haqimizda</a>
+                </li>
+                <li class="nav-item">
+                    <a href="index.html#contact" class="nav-link">Aloqa</a>
+                </li>
+                <li class="nav-item">
+                    <a href="login.html" class="nav-link">Kirish</a>
+                </li>
+                <li class="nav-item">
+                    <a href="register.html" class="nav-link btn btn-primary" style="padding: 8px 16px; margin-left: 10px;">Ro'yxatdan o'tish</a>
+                </li>
+            </ul>
+            <div class="nav-toggle">
+                <span class="bar"></span>
+                <span class="bar"></span>
+                <span class="bar"></span>
+            </div>
+        </div>
+    </nav>
+    
+    <div class="browse-container">
+        <!-- Navigation -->
+        <div class="browse-nav">
+            <div class="breadcrumb">
+                <a href="index.html"><i class="fas fa-home"></i></a>
+                <i class="fas fa-chevron-right"></i>
+                <span id="currentSubject">Barcha fayllar</span>
+            </div>
+            <div class="auth-actions">
+                <a href="login.html" class="btn btn-outline btn-sm">
+                    <i class="fas fa-sign-in-alt"></i> Kirish
+                </a>
+                <a href="register.html" class="btn btn-primary btn-sm">
+                    <i class="fas fa-user-plus"></i> Ro'yxatdan o'tish
+                </a>
+            </div>
+        </div>
+        
+        <!-- Header -->
+        <div class="browse-header">
+            <h1 id="pageTitle">Barcha Fayllar</h1>
+            <p id="pageDescription">Yuklab olish uchun ro'yxatdan o'ting</p>
+        </div>
+        
+        <!-- Login Prompt -->
+        <div class="login-prompt">
+            <h4><i class="fas fa-info-circle"></i> Fayllarni yuklab olish</h4>
+            <p>Fayllarni yuklab olish uchun ro'yxatdan o'tish yoki tizimga kirish talab qilinadi</p>
+            <div>
+                <a href="login.html" class="btn btn-primary">
+                    <i class="fas fa-sign-in-alt"></i> Kirish
+                </a>
+                <a href="register.html" class="btn btn-outline">
+                    <i class="fas fa-user-plus"></i> Ro'yxatdan o'tish
+                </a>
+            </div>
+        </div>
+        
+        <!-- Statistics -->
+        <div class="stats-bar">
+            <div class="stat-item">
+                <div class="stat-number" id="totalFiles">0</div>
+                <div class="stat-label">Jami fayllar</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-number" id="totalDownloads">0</div>
+                <div class="stat-label">Yuklab olingan</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-number" id="totalSubjects">0</div>
+                <div class="stat-label">Fanlar</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-number" id="avgRating">4.8</div>
+                <div class="stat-label">O'rtacha baho</div>
+            </div>
+        </div>
+        
+        <!-- Search and Filters -->
+        <div class="search-and-filters">
+            <div class="search-box">
+                <input type="text" id="searchInput" placeholder="Fayllarni qidiring..." 
+                       style="width: 100%; padding: 0.75rem; border: 1px solid #d1d5db; border-radius: 8px;">
+            </div>
+            <div class="filters">
+                <select id="subjectFilter" style="padding: 0.75rem; border: 1px solid #d1d5db; border-radius: 8px;">
+                    <option value="">Barcha fanlar</option>
+                </select>
+                <select id="formatFilter" style="padding: 0.75rem; border: 1px solid #d1d5db; border-radius: 8px;">
+                    <option value="">Barcha formatlar</option>
+                    <option value="ppt">PowerPoint</option>
+                    <option value="pdf">PDF</option>
+                    <option value="doc">Word</option>
+                    <option value="xlsx">Excel</option>
+                </select>
+            </div>
+        </div>
+        
+        <!-- Files Grid -->
+        <div class="files-grid" id="filesGrid">
+            <!-- Files will be populated by JavaScript -->
+        </div>
+        
+        <!-- Load More Button -->
+        <div style="text-align: center; margin: 2rem 0;">
+            <button class="btn btn-outline" id="loadMoreBtn" onclick="loadMoreFiles()" style="display: none;">
+                <i class="fas fa-plus"></i> Ko'proq ko'rish
+            </button>
+        </div>
+    </div>
+    
+    <script src="browse.js"></script>
+</body>
+</html>

@@ -1,0 +1,987 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Panel - Sukun Slide</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="admin.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <!-- Admin Navigation -->
+    <nav class="admin-navbar">
+        <div class="nav-container">
+            <div class="nav-logo">
+                <img src="assets/sukun_logo.png" alt="Sukun Slide Logo" class="logo-img">
+                <span>Sukun Slide Admin</span>
+            </div>
+            <div class="nav-user">
+                <div class="user-info">
+                    <img src="https://via.placeholder.com/40" alt="Admin" class="user-avatar">
+                    <div class="user-details">
+                        <span class="user-name">Ravshan Tech</span>
+                        <span class="user-role">Administrator</span>
+                    </div>
+                </div>
+                <div class="nav-actions">
+                    <button class="nav-btn" onclick="toggleNotifications()">
+                        <i class="fas fa-bell"></i>
+                        <span class="notification-badge">3</span>
+                    </button>
+                    <button class="nav-btn" onclick="logout()">
+                        <i class="fas fa-sign-out-alt"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <div class="admin-container">
+        <!-- Sidebar -->
+        <aside class="admin-sidebar">
+            <div class="sidebar-menu">
+                <a href="#dashboard" class="menu-item active" data-section="dashboard">
+                    <i class="fas fa-tachometer-alt"></i>
+                    <span>Dashboard</span>
+                </a>
+                <a href="#documents" class="menu-item" data-section="documents">
+                    <i class="fas fa-file-alt"></i>
+                    <span>Hujjatlar</span>
+                </a>
+                <a href="#upload" class="menu-item" data-section="upload">
+                    <i class="fas fa-upload"></i>
+                    <span>Yuklash</span>
+                </a>
+                <a href="#users" class="menu-item" data-section="users">
+                    <i class="fas fa-users"></i>
+                    <span>Foydalanuvchilar</span>
+                </a>
+                <a href="#subjects" class="menu-item" data-section="subjects">
+                    <i class="fas fa-book"></i>
+                    <span>Fanlar</span>
+                </a>
+                <a href="#analytics" class="menu-item" data-section="analytics">
+                    <i class="fas fa-chart-bar"></i>
+                    <span>Analitika</span>
+                </a>
+                <a href="#settings" class="menu-item" data-section="settings">
+                    <i class="fas fa-cog"></i>
+                    <span>Sozlamalar</span>
+                </a>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="admin-main">
+            <!-- Dashboard Section -->
+            <section id="dashboard" class="admin-section active">
+                <div class="section-header">
+                    <h1>Dashboard</h1>
+                    <p>Umumiy statistika va tizim holati</p>
+                </div>
+
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-icon">
+                            <i class="fas fa-file-alt"></i>
+                        </div>
+                        <div class="stat-content">
+                            <h3>342</h3>
+                            <p>Jami hujjatlar</p>
+                            <span class="stat-change positive">+12%</span>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon">
+                            <i class="fas fa-users"></i>
+                        </div>
+                        <div class="stat-content">
+                            <h3>1,234</h3>
+                            <p>Foydalanuvchilar</p>
+                            <span class="stat-change positive">+8%</span>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon">
+                            <i class="fas fa-download"></i>
+                        </div>
+                        <div class="stat-content">
+                            <h3>5,678</h3>
+                            <p>Yuklab olingan</p>
+                            <span class="stat-change positive">+15%</span>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon">
+                            <i class="fas fa-book"></i>
+                        </div>
+                        <div class="stat-content">
+                            <h3>8</h3>
+                            <p>Fanlar</p>
+                            <span class="stat-change neutral">0%</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="dashboard-grid">
+                    <div class="dashboard-card">
+                        <div class="card-header">
+                            <h3>Oxirgi faoliyat</h3>
+                            <button class="btn btn-sm">Barchasini ko'rish</button>
+                        </div>
+                        <div class="activity-list">
+                            <div class="activity-item">
+                                <div class="activity-icon">
+                                    <i class="fas fa-upload"></i>
+                                </div>
+                                <div class="activity-content">
+                                    <p><strong>Admin</strong> yangi hujjat yukladi</p>
+                                    <span>Matematika - Algebra asoslari.pptx</span>
+                                </div>
+                                <div class="activity-time">2 soat oldin</div>
+                            </div>
+                            <div class="activity-item">
+                                <div class="activity-icon">
+                                    <i class="fas fa-user-plus"></i>
+                                </div>
+                                <div class="activity-content">
+                                    <p><strong>Ahmad Karimov</strong> ro'yxatdan o'tdi</p>
+                                    <span>Toshkent Davlat Universiteti</span>
+                                </div>
+                                <div class="activity-time">4 soat oldin</div>
+                            </div>
+                            <div class="activity-item">
+                                <div class="activity-icon">
+                                    <i class="fas fa-download"></i>
+                                </div>
+                                <div class="activity-content">
+                                    <p><strong>Malika Tosheva</strong> hujjat yuklab oldi</p>
+                                    <span>Fizika laboratoriya ishlari.pdf</span>
+                                </div>
+                                <div class="activity-time">6 soat oldin</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="dashboard-card">
+                        <div class="card-header">
+                            <h3>Eng ko'p yuklab olingan</h3>
+                        </div>
+                        <div class="top-documents">
+                            <div class="document-item">
+                                <div class="document-info">
+                                    <h4>Algebra asoslari</h4>
+                                    <p>Matematika • PPT</p>
+                                </div>
+                                <div class="document-stats">
+                                    <span class="download-count">156</span>
+                                </div>
+                            </div>
+                            <div class="document-item">
+                                <div class="document-info">
+                                    <h4>O'zbekiston tarixi</h4>
+                                    <p>Tarix • PDF</p>
+                                </div>
+                                <div class="document-stats">
+                                    <span class="download-count">134</span>
+                                </div>
+                            </div>
+                            <div class="document-item">
+                                <div class="document-info">
+                                    <h4>Organik kimyo</h4>
+                                    <p>Kimyo • DOC</p>
+                                </div>
+                                <div class="document-stats">
+                                    <span class="download-count">98</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Documents Section -->
+            <section id="documents" class="admin-section">
+                <div class="section-header">
+                    <h1>Hujjatlar boshqaruvi</h1>
+                    <div class="header-actions">
+                        <div class="search-box">
+                            <i class="fas fa-search"></i>
+                            <input type="text" placeholder="Hujjatlarni qidiring...">
+                        </div>
+                        <select class="filter-select">
+                            <option value="">Barcha fanlar</option>
+                            <option value="mathematics">Matematika</option>
+                            <option value="physics">Fizika</option>
+                            <option value="chemistry">Kimyo</option>
+                        </select>
+                        <button class="btn btn-primary" onclick="showSection('upload')">
+                            <i class="fas fa-plus"></i>
+                            Yangi hujjat
+                        </button>
+                    </div>
+                </div>
+
+                <div class="documents-table">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>
+                                    <input type="checkbox" id="selectAll">
+                                </th>
+                                <th>Nomi</th>
+                                <th>Fan</th>
+                                <th>Format</th>
+                                <th>Hajmi</th>
+                                <th>Yuklab olingan</th>
+                                <th>Sana</th>
+                                <th>Amallar</th>
+                            </tr>
+                        </thead>
+                        <tbody id="documentsTableBody">
+                            <!-- Documents will be populated by JavaScript -->
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <!-- Upload Section -->
+            <section id="upload" class="admin-section">
+                <div class="section-header">
+                    <h1>Hujjat yuklash</h1>
+                    <p>Yangi o'quv materiallarini yuklang</p>
+                </div>
+
+                <div class="upload-container">
+                    <div class="upload-card">
+                        <div class="upload-area" id="uploadArea">
+                            <div class="upload-content">
+                                <i class="fas fa-cloud-upload-alt"></i>
+                                <h3>Fayllarni bu yerga sudrab tashlang</h3>
+                                <p>yoki</p>
+                                <button type="button" class="btn btn-primary" onclick="document.getElementById('fileInput').click()">
+                                    <i class="fas fa-folder-open"></i>
+                                    Fayl tanlash
+                                </button>
+                            </div>
+                        </div>
+                        <input type="file" id="fileInput" accept=".ppt,.pptx,.pdf,.doc,.docx,.xlsx" style="display: none;">
+                    </div>
+
+                    <form class="upload-form" id="uploadForm">
+                        <div class="form-grid">
+                            <div class="form-group">
+                                <label for="documentTitle">Hujjat nomi *</label>
+                                <input type="text" id="documentTitle" name="title" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="documentSubject">Fan *</label>
+                                <select id="documentSubject" name="subject" required>
+                                    <option value="">Fan tanlang</option>
+                                    <option value="mathematics">Matematika</option>
+                                    <option value="physics">Fizika</option>
+                                    <option value="chemistry">Kimyo</option>
+                                    <option value="biology">Biologiya</option>
+                                    <option value="history">Tarix</option>
+                                    <option value="geography">Geografiya</option>
+                                    <option value="literature">Adabiyot</option>
+                                    <option value="english">Ingliz tili</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="documentAuthor">Muallif</label>
+                                <input type="text" id="documentAuthor" name="author">
+                            </div>
+                            <div class="form-group">
+                                <label for="documentTags">Teglar</label>
+                                <input type="text" id="documentTags" name="tags" placeholder="algebra, geometriya, misollar">
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="documentDescription">Tavsif</label>
+                            <textarea id="documentDescription" name="description" rows="4" placeholder="Hujjat haqida batafsil ma'lumot..."></textarea>
+                        </div>
+                        <div class="form-actions">
+                            <button type="button" class="btn btn-secondary" onclick="clearUploadForm()">
+                                <i class="fas fa-times"></i>
+                                Bekor qilish
+                            </button>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-upload"></i>
+                                Yuklash
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </section>
+
+            <!-- Users Section -->
+            <section id="users" class="admin-section">
+                <div class="section-header">
+                    <h1>Foydalanuvchilar</h1>
+                    <div class="header-actions">
+                        <div class="search-box">
+                            <i class="fas fa-search"></i>
+                            <input type="text" placeholder="Foydalanuvchilarni qidiring...">
+                        </div>
+                        <select class="filter-select">
+                            <option value="">Barcha foydalanuvchilar</option>
+                            <option value="active">Faol</option>
+                            <option value="inactive">Nofaol</option>
+                            <option value="admin">Admin</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="users-grid" id="usersGrid">
+                    <!-- Users will be populated by JavaScript -->
+                </div>
+            </section>
+
+            <!-- Subjects Section -->
+            <section id="subjects" class="admin-section">
+                <div class="section-header">
+                    <h1>Fanlar boshqaruvi</h1>
+                    <button class="btn btn-primary" onclick="addNewSubject()">
+                        <i class="fas fa-plus"></i>
+                        Yangi fan
+                    </button>
+                </div>
+
+                <div class="subjects-grid" id="adminSubjectsGrid">
+                    <!-- Subjects will be populated by JavaScript -->
+                </div>
+            </section>
+
+            <!-- Analytics Section -->
+            <section id="analytics" class="admin-section">
+                <div class="section-header">
+                    <h1>Analitika va hisobotlar</h1>
+                    <div class="analytics-controls">
+                        <div class="date-range">
+                            <input type="date" id="startDate">
+                            <span>dan</span>
+                            <input type="date" id="endDate">
+                            <span>gacha</span>
+                            <button class="btn btn-primary" onclick="updateAnalytics()">Yangilash</button>
+                        </div>
+                        <div class="analytics-actions">
+                            <button class="btn btn-outline" onclick="exportReport()">
+                                <i class="fas fa-download"></i> Hisobotni eksport qilish
+                            </button>
+                            <button class="btn btn-secondary" onclick="refreshAnalytics()">
+                                <i class="fas fa-refresh"></i> Yangilash
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- KPI Cards -->
+                <div class="kpi-grid">
+                    <div class="kpi-card">
+                        <div class="kpi-icon">
+                            <i class="fas fa-eye"></i>
+                        </div>
+                        <div class="kpi-content">
+                            <h3 id="totalViews">0</h3>
+                            <p>Jami ko'rishlar</p>
+                            <span class="kpi-trend positive" id="viewsTrend">+0%</span>
+                        </div>
+                    </div>
+                    <div class="kpi-card">
+                        <div class="kpi-icon">
+                            <i class="fas fa-download"></i>
+                        </div>
+                        <div class="kpi-content">
+                            <h3 id="totalDownloadsAnalytics">0</h3>
+                            <p>Jami yuklab olishlar</p>
+                            <span class="kpi-trend positive" id="downloadsTrend">+0%</span>
+                        </div>
+                    </div>
+                    <div class="kpi-card">
+                        <div class="kpi-icon">
+                            <i class="fas fa-users"></i>
+                        </div>
+                        <div class="kpi-content">
+                            <h3 id="activeUsersAnalytics">0</h3>
+                            <p>Faol foydalanuvchilar</p>
+                            <span class="kpi-trend positive" id="usersTrend">+0%</span>
+                        </div>
+                    </div>
+                    <div class="kpi-card">
+                        <div class="kpi-icon">
+                            <i class="fas fa-star"></i>
+                        </div>
+                        <div class="kpi-content">
+                            <h3 id="avgRatingAnalytics">4.8</h3>
+                            <p>O'rtacha baho</p>
+                            <span class="kpi-trend positive">+2.1%</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="analytics-grid">
+                    <!-- Downloads Chart -->
+                    <div class="chart-card">
+                        <div class="chart-header">
+                            <h3>Yuklab olish statistikasi</h3>
+                            <div class="chart-controls">
+                                <select id="downloadsChartPeriod" onchange="updateDownloadsChart()">
+                                    <option value="7">So'nggi 7 kun</option>
+                                    <option value="30">So'nggi 30 kun</option>
+                                    <option value="90">So'nggi 90 kun</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="chart-container">
+                            <canvas id="downloadsChart" width="400" height="200"></canvas>
+                        </div>
+                    </div>
+                    
+                    <!-- Users Growth Chart -->
+                    <div class="chart-card">
+                        <div class="chart-header">
+                            <h3>Foydalanuvchilar o'sishi</h3>
+                            <div class="chart-controls">
+                                <select id="usersChartPeriod" onchange="updateUsersChart()">
+                                    <option value="30">So'nggi 30 kun</option>
+                                    <option value="90">So'nggi 90 kun</option>
+                                    <option value="365">So'nggi 1 yil</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="chart-container">
+                            <canvas id="usersChart" width="400" height="200"></canvas>
+                        </div>
+                    </div>
+                    
+                    <!-- Subject Popularity Chart -->
+                    <div class="chart-card">
+                        <div class="chart-header">
+                            <h3>Fanlar bo'yicha mashhurlik</h3>
+                        </div>
+                        <div class="chart-container">
+                            <canvas id="subjectsChart" width="400" height="200"></canvas>
+                        </div>
+                    </div>
+                    
+                    <!-- Document Performance -->
+                    <div class="chart-card">
+                        <div class="chart-header">
+                            <h3>Eng mashhur hujjatlar</h3>
+                            <button class="btn btn-sm btn-outline" onclick="viewAllDocuments()">
+                                Barchasini ko'rish
+                            </button>
+                        </div>
+                        <div class="top-documents-analytics">
+                            <div class="document-rank-list" id="topDocumentsList">
+                                <!-- Top documents will be populated by JavaScript -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Detailed Analytics Tables -->
+                <div class="analytics-tables">
+                    <div class="table-card">
+                        <div class="table-header">
+                            <h3>Tafsiliy yuklab olish hisoboti</h3>
+                            <div class="table-actions">
+                                <button class="btn btn-sm btn-outline" onclick="exportDownloadsReport()">
+                                    <i class="fas fa-file-excel"></i> Excel
+                                </button>
+                                <button class="btn btn-sm btn-outline" onclick="exportDownloadsPDF()">
+                                    <i class="fas fa-file-pdf"></i> PDF
+                                </button>
+                            </div>
+                        </div>
+                        <div class="table-container">
+                            <table class="analytics-table">
+                                <thead>
+                                    <tr>
+                                        <th>Hujjat</th>
+                                        <th>Fan</th>
+                                        <th>Yuklashlar</th>
+                                        <th>Ko'rishlar</th>
+                                        <th>Konversiya</th>
+                                        <th>So'nggi yuklab olish</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="downloadsReportTable">
+                                    <!-- Data will be populated by JavaScript -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    
+                    <div class="table-card">
+                        <div class="table-header">
+                            <h3>Foydalanuvchilar faoliyati</h3>
+                            <div class="table-actions">
+                                <button class="btn btn-sm btn-outline" onclick="exportUsersReport()">
+                                    <i class="fas fa-file-excel"></i> Excel
+                                </button>
+                            </div>
+                        </div>
+                        <div class="table-container">
+                            <table class="analytics-table">
+                                <thead>
+                                    <tr>
+                                        <th>Foydalanuvchi</th>
+                                        <th>Email</th>
+                                        <th>Yuklashlar</th>
+                                        <th>So'nggi faoliyat</th>
+                                        <th>Status</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="usersActivityTable">
+                                    <!-- Data will be populated by JavaScript -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Settings Section -->
+            <section id="settings" class="admin-section">
+                <div class="section-header">
+                    <h1>Tizim sozlamalari</h1>
+                    <div class="settings-tabs">
+                        <button class="tab-btn active" onclick="showSettingsTab('general')">Umumiy</button>
+                        <button class="tab-btn" onclick="showSettingsTab('security')">Xavfsizlik</button>
+                        <button class="tab-btn" onclick="showSettingsTab('notifications')">Bildirishnomalar</button>
+                        <button class="tab-btn" onclick="showSettingsTab('backup')">Zaxira</button>
+                        <button class="tab-btn" onclick="showSettingsTab('system')">Tizim</button>
+                    </div>
+                </div>
+
+                <!-- General Settings Tab -->
+                <div class="settings-tab-content active" id="general-settings">
+                    <div class="settings-grid">
+                        <div class="settings-card">
+                            <h3>Sayt sozlamalari</h3>
+                            <form class="settings-form" id="generalSettingsForm">
+                                <div class="form-group">
+                                    <label for="siteName">Sayt nomi</label>
+                                    <input type="text" id="siteName" value="Sukun Slide">
+                                </div>
+                                <div class="form-group">
+                                    <label for="siteDescription">Sayt tavsifi</label>
+                                    <textarea id="siteDescription" rows="3">O'zbekiston talabalari uchun o'quv materiallari platformasi</textarea>
+                                </div>
+                                <div class="form-group">
+                                    <label for="siteEmail">Kontakt email</label>
+                                    <input type="email" id="siteEmail" value="info@sukunslide.uz">
+                                </div>
+                                <div class="form-group">
+                                    <label for="siteLanguage">Asosiy til</label>
+                                    <select id="siteLanguage">
+                                        <option value="uz" selected>O'zbek tili</option>
+                                        <option value="ru">Rus tili</option>
+                                        <option value="en">Ingliz tili</option>
+                                    </select>
+                                </div>
+                                <button type="submit" class="btn btn-primary">Saqlash</button>
+                            </form>
+                        </div>
+
+                        <div class="settings-card">
+                            <h3>Fayl sozlamalari</h3>
+                            <form class="settings-form" id="fileSettingsForm">
+                                <div class="form-group">
+                                    <label for="maxFileSize">Maksimal fayl hajmi (MB)</label>
+                                    <input type="number" id="maxFileSize" value="50" min="1" max="500">
+                                </div>
+                                <div class="form-group">
+                                    <label for="allowedFileTypes">Ruxsat etilgan fayl turlari</label>
+                                    <div class="checkbox-group">
+                                        <label><input type="checkbox" value="pdf" checked> PDF</label>
+                                        <label><input type="checkbox" value="ppt" checked> PowerPoint</label>
+                                        <label><input type="checkbox" value="doc" checked> Word</label>
+                                        <label><input type="checkbox" value="xlsx" checked> Excel</label>
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <label for="autoApprove">Avtomatik tasdiqlash</label>
+                                    <div class="toggle-switch">
+                                        <input type="checkbox" id="autoApprove" checked>
+                                        <span class="slider"></span>
+                                    </div>
+                                </div>
+                                <button type="submit" class="btn btn-primary">Saqlash</button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Security Settings Tab -->
+                <div class="settings-tab-content" id="security-settings">
+                    <div class="settings-grid">
+                        <div class="settings-card">
+                            <h3>Parolni o'zgartirish</h3>
+                            <form class="settings-form" id="passwordChangeForm">
+                                <div class="form-group">
+                                    <label for="currentPassword">Joriy parol</label>
+                                    <input type="password" id="currentPassword" required>
+                                </div>
+                                <div class="form-group">
+                                    <label for="newPassword">Yangi parol</label>
+                                    <input type="password" id="newPassword" required>
+                                    <div class="password-strength" id="passwordStrength"></div>
+                                </div>
+                                <div class="form-group">
+                                    <label for="confirmPassword">Parolni tasdiqlang</label>
+                                    <input type="password" id="confirmPassword" required>
+                                </div>
+                                <button type="submit" class="btn btn-primary">Parolni o'zgartirish</button>
+                            </form>
+                        </div>
+
+                        <div class="settings-card">
+                            <h3>Xavfsizlik sozlamalari</h3>
+                            <form class="settings-form" id="securitySettingsForm">
+                                <div class="form-group">
+                                    <label for="loginAttempts">Maksimal login urinishlari</label>
+                                    <input type="number" id="loginAttempts" value="5" min="3" max="20">
+                                </div>
+                                <div class="form-group">
+                                    <label for="sessionTimeout">Sessiya muddati (daqiqa)</label>
+                                    <input type="number" id="sessionTimeout" value="30" min="10" max="120">
+                                </div>
+                                <div class="form-group">
+                                    <label for="twoFactorAuth">Ikki omilli autentifikatsiya</label>
+                                    <div class="toggle-switch">
+                                        <input type="checkbox" id="twoFactorAuth">
+                                        <span class="slider"></span>
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <label for="ipWhitelist">IP manzillar ro'yxati (har bir qatorda bitta)</label>
+                                    <textarea id="ipWhitelist" rows="4" placeholder="192.168.1.1\n10.0.0.1"></textarea>
+                                </div>
+                                <button type="submit" class="btn btn-primary">Saqlash</button>
+                            </form>
+                        </div>
+
+                        <div class="settings-card">
+                            <h3>Audit jurnali</h3>
+                            <div class="audit-controls">
+                                <div class="form-group">
+                                    <label for="auditLogLevel">Log darajasi</label>
+                                    <select id="auditLogLevel">
+                                        <option value="info" selected>Info</option>
+                                        <option value="warning">Warning</option>
+                                        <option value="error">Error</option>
+                                        <option value="debug">Debug</option>
+                                    </select>
+                                </div>
+                                <button class="btn btn-outline" onclick="downloadAuditLog()">
+                                    <i class="fas fa-download"></i> Audit logni yuklab olish
+                                </button>
+                                <button class="btn btn-secondary" onclick="clearAuditLog()">
+                                    <i class="fas fa-trash"></i> Logni tozalash
+                                </button>
+                            </div>
+                            <div class="recent-audit-logs" id="recentAuditLogs">
+                                <!-- Recent logs will be populated by JavaScript -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Notifications Settings Tab -->
+                <div class="settings-tab-content" id="notifications-settings">
+                    <div class="settings-grid">
+                        <div class="settings-card">
+                            <h3>Email bildirishnomalar</h3>
+                            <form class="settings-form" id="emailNotificationsForm">
+                                <div class="form-group">
+                                    <label for="smtpHost">SMTP Host</label>
+                                    <input type="text" id="smtpHost" placeholder="smtp.gmail.com">
+                                </div>
+                                <div class="form-group">
+                                    <label for="smtpPort">SMTP Port</label>
+                                    <input type="number" id="smtpPort" value="587">
+                                </div>
+                                <div class="form-group">
+                                    <label for="smtpUsername">SMTP Username</label>
+                                    <input type="email" id="smtpUsername">
+                                </div>
+                                <div class="form-group">
+                                    <label for="smtpPassword">SMTP Password</label>
+                                    <input type="password" id="smtpPassword">
+                                </div>
+                                <div class="form-group">
+                                    <button type="button" class="btn btn-outline" onclick="testEmailSettings()">
+                                        <i class="fas fa-envelope"></i> Test yuborish
+                                    </button>
+                                </div>
+                                <button type="submit" class="btn btn-primary">Saqlash</button>
+                            </form>
+                        </div>
+
+                        <div class="settings-card">
+                            <h3>Bildirishnoma turlari</h3>
+                            <form class="settings-form" id="notificationTypesForm">
+                                <div class="notification-types">
+                                    <div class="notification-item">
+                                        <label>Yangi foydalanuvchi ro'yxatdan o'tganda</label>
+                                        <div class="toggle-switch">
+                                            <input type="checkbox" id="notifyNewUser" checked>
+                                            <span class="slider"></span>
+                                        </div>
+                                    </div>
+                                    <div class="notification-item">
+                                        <label>Yangi hujjat yuklaganda</label>
+                                        <div class="toggle-switch">
+                                            <input type="checkbox" id="notifyNewDocument" checked>
+                                            <span class="slider"></span>
+                                        </div>
+                                    </div>
+                                    <div class="notification-item">
+                                        <label>Tizim xatolari</label>
+                                        <div class="toggle-switch">
+                                            <input type="checkbox" id="notifySystemError" checked>
+                                            <span class="slider"></span>
+                                        </div>
+                                    </div>
+                                    <div class="notification-item">
+                                        <label>Kunlik hisobotlar</label>
+                                        <div class="toggle-switch">
+                                            <input type="checkbox" id="notifyDailyReport" checked>
+                                            <span class="slider"></span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <button type="submit" class="btn btn-primary">Saqlash</button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Backup Settings Tab -->
+                <div class="settings-tab-content" id="backup-settings">
+                    <div class="settings-grid">
+                        <div class="settings-card">
+                            <h3>Avtomatik zaxira</h3>
+                            <form class="settings-form" id="backupSettingsForm">
+                                <div class="form-group">
+                                    <label for="backupFrequency">Zaxira chastotasi</label>
+                                    <select id="backupFrequency">
+                                        <option value="daily" selected>Kunlik</option>
+                                        <option value="weekly">Haftalik</option>
+                                        <option value="monthly">Oylik</option>
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label for="backupTime">Zaxira vaqti</label>
+                                    <input type="time" id="backupTime" value="02:00">
+                                </div>
+                                <div class="form-group">
+                                    <label for="retentionDays">Zaxiralarni saqlash muddati (kun)</label>
+                                    <input type="number" id="retentionDays" value="30" min="7" max="365">
+                                </div>
+                                <div class="form-group">
+                                    <label for="autoBackup">Avtomatik zaxiralash</label>
+                                    <div class="toggle-switch">
+                                        <input type="checkbox" id="autoBackup" checked>
+                                        <span class="slider"></span>
+                                    </div>
+                                </div>
+                                <button type="submit" class="btn btn-primary">Saqlash</button>
+                            </form>
+                        </div>
+
+                        <div class="settings-card">
+                            <h3>Zaxira amallar</h3>
+                            <div class="backup-actions">
+                                <div class="action-group">
+                                    <h4>Ma'lumotlar bazasi zaxirasi</h4>
+                                    <p>Barcha foydalanuvchilar va tizim sozlamalari</p>
+                                    <button class="btn btn-primary" onclick="createDatabaseBackup()">
+                                        <i class="fas fa-database"></i> Zaxira yaratish
+                                    </button>
+                                </div>
+                                <div class="action-group">
+                                    <h4>Fayllar zaxirasi</h4>
+                                    <p>Barcha yuklangan hujjatlar va rasmlar</p>
+                                    <button class="btn btn-primary" onclick="createFilesBackup()">
+                                        <i class="fas fa-file-archive"></i> Zaxira yaratish
+                                    </button>
+                                </div>
+                                <div class="action-group">
+                                    <h4>To'liq zaxira</h4>
+                                    <p>Ma'lumotlar bazasi va barcha fayllar</p>
+                                    <button class="btn btn-success" onclick="createFullBackup()">
+                                        <i class="fas fa-copy"></i> To'liq zaxira
+                                    </button>
+                                </div>
+                            </div>
+                            
+                            <div class="backup-history">
+                                <h4>Zaxira tarixi</h4>
+                                <div class="backup-list" id="backupHistoryList">
+                                    <!-- Backup history will be populated by JavaScript -->
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="settings-card">
+                            <h3>Tiklash</h3>
+                            <div class="restore-section">
+                                <div class="form-group">
+                                    <label for="restoreFile">Zaxira faylini tanlang</label>
+                                    <input type="file" id="restoreFile" accept=".zip,.sql">
+                                </div>
+                                <div class="restore-options">
+                                    <label><input type="checkbox" id="restoreDatabase"> Ma'lumotlar bazasini tiklash</label>
+                                    <label><input type="checkbox" id="restoreFiles"> Fayllarni tiklash</label>
+                                    <label><input type="checkbox" id="restoreSettings"> Sozlamalarni tiklash</label>
+                                </div>
+                                <button class="btn btn-warning" onclick="restoreFromBackup()">
+                                    <i class="fas fa-undo"></i> Tiklash
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- System Monitoring Tab -->
+                <div class="settings-tab-content" id="system-settings">
+                    <div class="settings-grid">
+                        <div class="settings-card">
+                            <h3>Tizim holati</h3>
+                            <div class="system-stats">
+                                <div class="stat-item">
+                                    <label>Server vaqti:</label>
+                                    <span id="serverTime">--</span>
+                                </div>
+                                <div class="stat-item">
+                                    <label>Uptime:</label>
+                                    <span id="serverUptime">--</span>
+                                </div>
+                                <div class="stat-item">
+                                    <label>PHP versiyasi:</label>
+                                    <span id="phpVersion">--</span>
+                                </div>
+                                <div class="stat-item">
+                                    <label>Ma'lumotlar bazasi:</label>
+                                    <span id="databaseStatus" class="status-indicator">Ulanish tekshirilmoqda...</span>
+                                </div>
+                                <div class="stat-item">
+                                    <label>Xotira ishlatilishi:</label>
+                                    <div class="progress-bar">
+                                        <div class="progress" id="memoryUsage" style="width: 0%"></div>
+                                    </div>
+                                    <span id="memoryText">0%</span>
+                                </div>
+                            </div>
+                            <button class="btn btn-outline" onclick="refreshSystemStats()">
+                                <i class="fas fa-sync"></i> Yangilash
+                            </button>
+                        </div>
+
+                        <div class="settings-card">
+                            <h3>Tizim loglar</h3>
+                            <div class="log-controls">
+                                <select id="logType">
+                                    <option value="error">Xato loglari</option>
+                                    <option value="access">Kirish loglari</option>
+                                    <option value="system">Tizim loglari</option>
+                                </select>
+                                <button class="btn btn-outline" onclick="refreshLogs()">
+                                    <i class="fas fa-sync"></i> Yangilash
+                                </button>
+                                <button class="btn btn-outline" onclick="downloadLogs()">
+                                    <i class="fas fa-download"></i> Yuklab olish
+                                </button>
+                            </div>
+                            <div class="log-viewer" id="logViewer">
+                                <!-- System logs will be populated by JavaScript -->
+                            </div>
+                        </div>
+
+                        <div class="settings-card">
+                            <h3>Tizimni tozalash</h3>
+                            <div class="cleanup-actions">
+                                <div class="cleanup-item">
+                                    <div class="cleanup-info">
+                                        <h4>Kesh tozalash</h4>
+                                        <p>Tizim keshi va vaqtinchalik fayllar</p>
+                                    </div>
+                                    <button class="btn btn-outline" onclick="clearCache()">
+                                        <i class="fas fa-broom"></i> Tozalash
+                                    </button>
+                                </div>
+                                <div class="cleanup-item">
+                                    <div class="cleanup-info">
+                                        <h4>Eski fayllarni o'chirish</h4>
+                                        <p>30 kundan eski vaqtinchalik fayllar</p>
+                                    </div>
+                                    <button class="btn btn-outline" onclick="cleanupOldFiles()">
+                                        <i class="fas fa-trash"></i> O'chirish
+                                    </button>
+                                </div>
+                                <div class="cleanup-item">
+                                    <div class="cleanup-info">
+                                        <h4>Audit loglarni arxivlash</h4>
+                                        <p>Eski audit loglarni ZIP ga arxivlash</p>
+                                    </div>
+                                    <button class="btn btn-outline" onclick="archiveAuditLogs()">
+                                        <i class="fas fa-archive"></i> Arxivlash
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <!-- Notifications Panel -->
+    <div class="notifications-panel" id="notificationsPanel">
+        <div class="panel-header">
+            <h3>Bildirishnomalar</h3>
+            <button class="close-btn" onclick="toggleNotifications()">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        <div class="notifications-list">
+            <div class="notification-item">
+                <div class="notification-icon">
+                    <i class="fas fa-upload"></i>
+                </div>
+                <div class="notification-content">
+                    <p>Yangi hujjat yuklandi</p>
+                    <span>2 soat oldin</span>
+                </div>
+            </div>
+            <div class="notification-item">
+                <div class="notification-icon">
+                    <i class="fas fa-user-plus"></i>
+                </div>
+                <div class="notification-content">
+                    <p>Yangi foydalanuvchi ro'yxatdan o'tdi</p>
+                    <span>4 soat oldin</span>
+                </div>
+            </div>
+            <div class="notification-item">
+                <div class="notification-icon">
+                    <i class="fas fa-exclamation-triangle"></i>
+                </div>
+                <div class="notification-content">
+                    <p>Server xatosi yuz berdi</p>
+                    <span>6 soat oldin</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="admin.js"></script>
+</body>
+</html>
