@@ -15,8 +15,10 @@ let subjectsChart = null;
 let systemMonitoringInterval = null;
 
 // Initialize admin panel
-document.addEventListener('DOMContentLoaded', function() {
-    checkAdminAuth();
+document.addEventListener('DOMContentLoaded', async function() {
+    const isAuthenticated = await checkAdminAuth();
+    if (!isAuthenticated) return;
+    
     initializeDefaultData();
     initializeAdminPanel();
     setupEventListeners();
@@ -49,13 +51,39 @@ function initializeDefaultData() {
 }
 
 // Check admin authentication
-function checkAdminAuth() {
+async function checkAdminAuth() {
+    const token = localStorage.getItem('access_token');
     const currentUser = JSON.parse(localStorage.getItem('currentUser') || sessionStorage.getItem('currentUser') || 'null');
     
-    if (!currentUser || currentUser.role !== 'admin') {
+    if (!token && (!currentUser || currentUser.role !== 'admin')) {
         window.location.href = 'login.html';
-        return;
+        return false;
     }
+    
+    // If we have a token, verify it with the API
+    if (token) {
+        try {
+            const user = await apiCall(CONFIG.AUTH.ME);
+            if (!user || (user.role !== 'admin' && user.is_admin !== true)) {
+                localStorage.removeItem('access_token');
+                localStorage.removeItem('currentUser');
+                window.location.href = 'login.html';
+                return false;
+            }
+            
+            // Update current user data
+            localStorage.setItem('currentUser', JSON.stringify(user));
+            return true;
+        } catch (error) {
+            console.error('Auth check failed:', error);
+            localStorage.removeItem('access_token');
+            localStorage.removeItem('currentUser');
+            window.location.href = 'login.html';
+            return false;
+        }
+    }
+    
+    return true;
 }
 
 // Initialize admin panel
@@ -817,17 +845,9 @@ async function handleUpload(e) {
         const sanitizedTitle = title.toLowerCase().replace(/[^a-z0-9]+/g, '-');
         const filename = `${sanitizedTitle}-${timestamp}.${fileExtension}`;
         
-        // Create upload directory if it doesn't exist
-        const uploadDir = 'uploads/documents';
-        try {
-            await fs.mkdir(uploadDir, { recursive: true });
-        } catch (err) {
-            console.warn('Upload directory already exists or could not be created:', err);
-        }
-        
         // Create FormData
         const formData = new FormData();
-        formData.append('file', file, filename);
+        formData.append('file', file);
         formData.append('title', title);
         formData.append('subject', subject);
         formData.append('author', author);
@@ -846,55 +866,64 @@ async function handleUpload(e) {
         };
         
         xhr.onload = () => {
-            if (xhr.status === 200) {
-                const response = JSON.parse(xhr.responseText);
-                
-                if (response.success) {
-                    // Add new document to admin documents
-                    const newDoc = {
-                        id: adminDocuments.length + 1,
-                        title: title,
-                        subject: subject,
-                        format: fileExtension,
-                        size: formatFileSize(file.size),
-                        downloads: 0,
-                        uploadDate: new Date().toISOString().split('T')[0],
-                        author: author || 'Admin',
-                        description: description || '',
-                        tags: tags ? tags.split(',').map(tag => tag.trim()) : [],
-                        status: 'active',
-                        filePath: `${uploadDir}/${filename}`,
-                        mimeType: fileType
-                    };
-                    
-                    adminDocuments.unshift(newDoc);
-                    
-                    // Log activity
-                    logActivity('fas fa-upload', 'Admin yangi hujjat yukladi', `${newDoc.title} - ${newDoc.format.toUpperCase()}`);
-                    
-                    // Add notification for document upload
-                    addNotification('document', 'Yangi hujjat yuklandi', `${newDoc.title} - ${getSubjectName(newDoc.subject)}`);
-                    
-                    showNotification('Hujjat muvaffaqiyatli yuklandi!', 'success');
-                    clearUploadForm();
-                    
-                    // Update UI
-                    loadDocuments();
-                    updateStats();
-                    
-                    // Update main website documents
-                    if (typeof documentsData !== 'undefined') {
-                        documentsData.unshift(newDoc);
-                    }
-                    
-                    // Save to localStorage
-                    localStorage.setItem('documents', JSON.stringify(adminDocuments));
-                    
-                } else {
-                    throw new Error(response.message || 'Yuklashda xatolik yuz berdi');
+            if (xhr.status >= 200 && xhr.status < 300) {
+                let response;
+                try {
+                    response = JSON.parse(xhr.responseText);
+                } catch (e) {
+                    // If API doesn't return JSON, create a mock response
+                    response = { id: Date.now(), success: true };
                 }
+                
+                // Add new document to admin documents
+                const newDoc = {
+                    id: response.id || Date.now(),
+                    title: title,
+                    subject: subject,
+                    format: fileExtension,
+                    size: formatFileSize(file.size),
+                    downloads: 0,
+                    uploadDate: new Date().toISOString().split('T')[0],
+                    author: author || 'Admin',
+                    description: description || '',
+                    tags: tags ? tags.split(',').map(tag => tag.trim()) : [],
+                    status: 'active',
+                    filePath: response.file_path || `uploads/${file.name}`,
+                    mimeType: fileType
+                };
+                
+                adminDocuments.unshift(newDoc);
+                
+                // Log activity
+                logActivity('fas fa-upload', 'Admin yangi hujjat yukladi', `${newDoc.title} - ${newDoc.format.toUpperCase()}`);
+                
+                // Add notification for document upload
+                addNotification('document', 'Yangi hujjat yuklandi', `${newDoc.title} - ${getSubjectName(newDoc.subject)}`);
+                
+                showNotification('Hujjat muvaffaqiyatli yuklandi!', 'success');
+                clearUploadForm();
+                
+                // Update UI
+                loadDocuments();
+                updateStats();
+                
+                // Update main website documents
+                if (typeof documentsData !== 'undefined') {
+                    documentsData.unshift(newDoc);
+                }
+                
+                // Save to localStorage
+                localStorage.setItem('documents', JSON.stringify(adminDocuments));
+                
             } else {
-                throw new Error('Server xatosi: ' + xhr.status);
+                let errorMessage = `Server xatosi: ${xhr.status}`;
+                try {
+                    const errorResponse = JSON.parse(xhr.responseText);
+                    errorMessage = errorResponse.detail || errorResponse.message || errorMessage;
+                } catch (e) {
+                    // Use default error message
+                }
+                throw new Error(errorMessage);
             }
         };
         
@@ -902,8 +931,14 @@ async function handleUpload(e) {
             throw new Error('Tarmoq xatosi yuz berdi');
         };
         
-        // Send the upload request
-        xhr.open('POST', '/api/upload', true);
+        // Get auth token
+        const token = localStorage.getItem('access_token');
+        
+        // Send the upload request to the API
+        xhr.open('POST', CONFIG.API_BASE + CONFIG.DOCUMENTS.UPLOAD, true);
+        if (token) {
+            xhr.setRequestHeader('Authorization', `Bearer ${token}`);
+        }
         xhr.send(formData);
         
     } catch (error) {

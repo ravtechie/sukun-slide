@@ -61,36 +61,76 @@ async function handleLogin(e) {
     showLoadingState(submitBtn);
     
     try {
-        // Simulate API call delay
-        await new Promise(resolve => setTimeout(resolve, 1500));
-        
-        // Check if any users exist
-        if (users.length === 0) {
-            throw new Error('Hali birorta foydalanuvchi ro\'yxatdan o\'tmagan. Iltimos, avval ro\'yxatdan o\'ting.');
-        }
-        
-        // Validate credentials
-        const user = users.find(u => u.email === email && u.password === password);
-        
-        if (user && user.isActive) {
-            currentUser = user;
+        // Try API login first
+        try {
+            const loginData = new FormData();
+            loginData.append('username', email);
+            loginData.append('password', password);
             
-            // Save to localStorage
-            if (rememberMe) {
-                localStorage.setItem('currentUser', JSON.stringify(user));
+            const response = await fetch(CONFIG.API_BASE + CONFIG.AUTH.LOGIN, {
+                method: 'POST',
+                body: loginData
+            });
+            
+            if (response.ok) {
+                const data = await response.json();
+                
+                // Store token
+                localStorage.setItem('access_token', data.access_token);
+                
+                // Get user info
+                const userResponse = await apiCall(CONFIG.AUTH.ME);
+                currentUser = userResponse;
+                
+                // Save user data
+                if (rememberMe) {
+                    localStorage.setItem('currentUser', JSON.stringify(userResponse));
+                } else {
+                    sessionStorage.setItem('currentUser', JSON.stringify(userResponse));
+                }
+                
+                showNotification('Muvaffaqiyatli kirdingiz!', 'success');
+                
+                // Redirect after short delay
+                setTimeout(() => {
+                    redirectToDashboard();
+                }, 1000);
+                return;
             } else {
-                sessionStorage.setItem('currentUser', JSON.stringify(user));
+                const error = await response.json();
+                throw new Error(error.detail || 'API login failed');
+            }
+        } catch (apiError) {
+            console.log('API login failed, trying localStorage fallback:', apiError);
+            
+            // Fallback to localStorage authentication
+            if (users.length === 0) {
+                throw new Error('Hali birorta foydalanuvchi ro\'yxatdan o\'tmagan. Iltimos, avval ro\'yxatdan o\'ting.');
             }
             
-            showNotification('Muvaffaqiyatli kirdingiz!', 'success');
+            // Validate credentials
+            const user = users.find(u => u.email === email && u.password === password);
             
-            // Redirect after short delay
-            setTimeout(() => {
-                redirectToDashboard();
-            }, 1000);
-            
-        } else {
-            throw new Error('Email yoki parol noto\'g\'ri');
+            if (user && user.isActive) {
+                currentUser = user;
+                
+                // Save to localStorage
+                if (rememberMe) {
+                    localStorage.setItem('currentUser', JSON.stringify(user));
+                } else {
+                    sessionStorage.setItem('currentUser', JSON.stringify(user));
+                }
+                
+                showNotification('Muvaffaqiyatli kirdingiz!', 'success');
+                
+                // Redirect after short delay
+                setTimeout(() => {
+                    redirectToDashboard();
+                }, 1000);
+                
+            } else {
+                throw new Error('Email yoki parol noto\'g\'ri');
+            }
         }
         
     } catch (error) {
