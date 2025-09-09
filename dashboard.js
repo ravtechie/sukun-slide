@@ -67,6 +67,14 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Initialize notifications
     updateNotificationBadge();
+    
+    // Debug: Log documents data to help with troubleshooting
+    console.log('Documents loaded:', documentsData.length);
+    if (documentsData.length > 0) {
+        console.log('Sample document structure:', documentsData[0]);
+    } else {
+        console.log('No documents found. You can add sample documents via admin panel or use createSampleDocuments() function in console.');
+    }
 });
 
 // Check user authentication
@@ -624,15 +632,7 @@ function renderFilteredDownloads(downloads) {
     `).join('');
 }
 
-// Document actions
-function downloadDocument(id) {
-    showNotification('Hujjat yuklab olinmoqda...', 'info');
-    
-    // Simulate download
-    setTimeout(() => {
-        showNotification('Hujjat muvaffaqiyatli yuklab olindi!', 'success');
-    }, 1000);
-}
+// Document actions - moved to bottom of file for proper implementation
 
 function addToFavorites(id) {
     const download = userDownloads.find(d => d.id === id);
@@ -1054,19 +1054,33 @@ function downloadDocument(docId) {
         return;
     }
     
-    // Check if document file exists
-    if (!doc.filePath) {
-        showNotification('Fayl yo\'lini aniqlab bo\'lmadi', 'error');
-        return;
-    }
-    
     // Show download notification
     showNotification(`${doc.title} yuklab olinmoqda...`, 'info');
     
+    // Try different file path options
+    let filePath = doc.filePath || doc.file || doc.url;
+    
+    // If no direct file path, try to construct one from admin uploads
+    if (!filePath && doc.filename) {
+        filePath = `uploads/${doc.filename}`;
+    }
+    
+    // If still no file path, check if it's a demo/sample file
+    if (!filePath) {
+        // For demo purposes, create a placeholder file or show appropriate message
+        console.warn('No file path found for document:', doc);
+        
+        // Try to download as a text file with document info (for demo)
+        const documentInfo = `${doc.title}\n\nAuthor: ${doc.author}\nSubject: ${getSubjectName(doc.subject)}\nFormat: ${doc.format}\nDescription: ${doc.description || 'No description available'}\n\nThis is a placeholder file. The actual document should be uploaded by the admin.`;
+        
+        const blob = new Blob([documentInfo], { type: 'text/plain' });
+        filePath = URL.createObjectURL(blob);
+    }
+    
     // Create download link
     const downloadLink = document.createElement('a');
-    downloadLink.href = doc.filePath;
-    downloadLink.download = `${doc.title}.${doc.format}`;
+    downloadLink.href = filePath;
+    downloadLink.download = `${doc.title}.${doc.format || 'txt'}`;
     downloadLink.style.display = 'none';
     
     document.body.appendChild(downloadLink);
@@ -1084,11 +1098,11 @@ function downloadDocument(docId) {
             docId: docId,
             title: doc.title,
             subject: doc.subject,
-            format: doc.format,
+            format: doc.format || 'txt',
             downloadDate: new Date().toISOString(),
             author: doc.author,
-            size: doc.size,
-            filePath: doc.filePath
+            size: doc.size || 'Unknown',
+            filePath: filePath
         };
         userDownloads.unshift(downloadRecord);
         
@@ -1113,10 +1127,15 @@ function downloadDocument(docId) {
         
     } catch (error) {
         console.error('Download error:', error);
-        showNotification('Yuklab olishda xatolik yuz berdi', 'error');
+        showNotification('Yuklab olishda xatolik yuz berdi. Iltimos, admin bilan bog\'laning.', 'error');
     } finally {
         // Clean up
         document.body.removeChild(downloadLink);
+        
+        // Clean up blob URL if created
+        if (filePath && filePath.startsWith('blob:')) {
+            setTimeout(() => URL.revokeObjectURL(filePath), 1000);
+        }
     }
 }
 
@@ -1443,3 +1462,59 @@ function closeShareModal() {
         modal.remove();
     }
 }
+
+// Helper function for testing - creates sample documents
+function createSampleDocuments() {
+    const sampleDocuments = [
+        {
+            id: 1,
+            title: "Matematika - Algebra Asoslari",
+            description: "Algebra fanining asosiy tushunchalari va formulalari",
+            author: "Prof. Ahmad Nazarov",
+            subject: "mathematics",
+            format: "pdf",
+            size: "2.5 MB",
+            uploadDate: "2024-01-15",
+            downloadCount: 156
+        },
+        {
+            id: 2,
+            title: "Fizika - Mexanika Qonunlari",
+            description: "Mexanika bo'limining asosiy qonunlari va masalalar",
+            author: "Dr. Gulnora Karimova",
+            subject: "physics",
+            format: "ppt",
+            size: "4.8 MB",
+            uploadDate: "2024-01-10",
+            downloadCount: 89
+        },
+        {
+            id: 3,
+            title: "Kimyo - Anorganik Birikmalar",
+            description: "Anorganik kimyo fanidan asosiy birikmalar va ularning xossalari",
+            author: "Prof. Rustam Toshmatov",
+            subject: "chemistry",
+            format: "doc",
+            size: "1.8 MB",
+            uploadDate: "2024-01-08",
+            downloadCount: 67
+        }
+    ];
+    
+    // Save to localStorage
+    localStorage.setItem('documents', JSON.stringify(sampleDocuments));
+    documentsData = sampleDocuments;
+    
+    // Reload the documents
+    loadAllDocuments();
+    loadRecommendedDocuments();
+    
+    console.log('Sample documents created successfully!');
+    showNotification('Namuna hujjatlar yaratildi!', 'success');
+    
+    // Add notification
+    addNotification('system', 'Namuna hujjatlar qo\'shildi', 'Test uchun 3 ta hujjat yaratildi');
+}
+
+// Make function available globally for console access
+window.createSampleDocuments = createSampleDocuments;
