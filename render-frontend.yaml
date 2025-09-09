@@ -1,0 +1,16 @@
+services:
+  - type: static_site
+    name: sukun-slide-frontend
+    env: static
+    buildCommand: echo "No build needed - static HTML/CSS/JS"
+    staticPublishPath: .
+    routes:
+      - type: rewrite
+        source: /api/*
+        destination: https://sukun-slide-api.onrender.com/api/:splat
+    headers:
+      - path: /*
+        headers:
+          X-Frame-Options: DENY
+          X-Content-Type-Options: nosniff
+          Referrer-Policy: strict-origin-when-cross-origin
