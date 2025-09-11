@@ -105,6 +105,16 @@ BEGIN
 END;
 $$ language 'plpgsql';
 
+-- Function to increment download count
+CREATE OR REPLACE FUNCTION increment_download_count(document_id UUID)
+RETURNS void AS $$
+BEGIN
+    UPDATE documents 
+    SET download_count = download_count + 1, updated_at = NOW()
+    WHERE id = document_id;
+END;
+$$ language 'plpgsql';
+
 -- Triggers for updated_at
 CREATE TRIGGER update_users_updated_at BEFORE UPDATE ON users FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 CREATE TRIGGER update_documents_updated_at BEFORE UPDATE ON documents FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();

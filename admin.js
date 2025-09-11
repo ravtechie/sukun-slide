@@ -935,7 +935,7 @@ async function handleUpload(e) {
         const token = localStorage.getItem('access_token');
         
         // Send the upload request to the API
-        xhr.open('POST', CONFIG.API_BASE + CONFIG.DOCUMENTS.UPLOAD, true);
+        xhr.open('POST', CONFIG.API_BASE + CONFIG.ADMIN.UPLOAD, true);
         if (token) {
             xhr.setRequestHeader('Authorization', `Bearer ${token}`);
         }

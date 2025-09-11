@@ -31,6 +31,7 @@ const CONFIG = {
     ADMIN: {
         USERS: '/admin/users',
         DOCUMENTS: '/admin/documents/pending',
+        UPLOAD: '/admin/documents/upload',
         ANALYTICS: '/admin/analytics/overview'
     }
 };
